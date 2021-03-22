@@ -3,6 +3,7 @@ const tourController = require('./../controllers/tourController');
 
 const router = express.Router();
 
+//checkid middleware will run before invoking any of the tour related routes
 router.param('id', tourController.checkID);
 
 router
