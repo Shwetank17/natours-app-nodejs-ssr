@@ -26,31 +26,44 @@ const Tour = require('../models/tourModel');
 //   next();
 // };
 
-exports.getAllTours = (req, res) => {
-  console.log(req.requestTime);
-
-  res.status(200).json({
-    status: 'success',
-    requestedAt: req.requestTime
-    // results: tours.length,
-    // data: {
-    //   tours
-    // }
-  });
+exports.getAllTours = async (req, res) => {
+  try {
+    //find and return all stored tours in tours collection in natour-primary db
+    const data = await Tour.find();
+    res.status(200).json({
+      status: 'success',
+      requestedAt: req.requestTime,
+      data: {
+        allTours: data
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'error',
+      requestedAt: req.requestTime,
+      error: error
+    });
+  }
 };
 
-exports.getTour = (req, res) => {
-  console.log(req.params);
-  // const id = req.params.id * 1;
-
-  // const tour = tours.find(el => el.id === id);
-
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-  //     tour
-  //   }
-  // });
+exports.getTour = async (req, res) => {
+  try {
+    //find and return specific tour in tours collection in natour-primary db
+    const data = await Tour.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      requestedAt: req.requestTime,
+      tour: {
+        tour: data
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'error',
+      requestedAt: req.requestTime,
+      error: error
+    });
+  }
 };
 
 exports.createTour = async (req, res) => {
@@ -64,7 +77,7 @@ exports.createTour = async (req, res) => {
     console.log('Tour created successfully');
     res.status(201).json({
       status: 'success',
-      data: {
+      tourCreated: {
         tour: newTour
       }
     });
