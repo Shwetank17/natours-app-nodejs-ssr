@@ -33,8 +33,8 @@ exports.getAllTours = async (req, res) => {
     res.status(200).json({
       status: 'success',
       requestedAt: req.requestTime,
-      data: {
-        allTours: data
+      allTours: {
+        data
       }
     });
   } catch (error) {
@@ -53,8 +53,8 @@ exports.getTour = async (req, res) => {
     res.status(200).json({
       status: 'success',
       requestedAt: req.requestTime,
-      tour: {
-        tour: data
+      requestedTour: {
+        data
       }
     });
   } catch (error) {
@@ -78,7 +78,7 @@ exports.createTour = async (req, res) => {
     res.status(201).json({
       status: 'success',
       tourCreated: {
-        tour: newTour
+        newTour
       }
     });
   } catch (error) {
@@ -91,18 +91,40 @@ exports.createTour = async (req, res) => {
   }
 };
 
-exports.updateTour = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: '<Updated tour here...>'
-    }
-  });
+exports.updateTour = async (req, res) => {
+  try {
+    //req.body passed to findByIdAndUpdate will contain the JSON data to be updated for the given id. 'new' true means return a new updated document, runValidators true means that whatever validations we have specified in our Tour model should run on the updated document as well.
+    const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    res.status(200).json({
+      status: 'success',
+      updatedTour: {
+        updatedTour
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'error',
+      error: error
+    });
+  }
 };
 
-exports.deleteTour = (req, res) => {
-  res.status(204).json({
-    status: 'success',
-    data: null
-  });
+exports.deleteTour = async (req, res) => {
+  try {
+    const deletedTour = await Tour.findByIdAndDelete(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      deletedTour: {
+        deletedTour
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'error',
+      error: error
+    });
+  }
 };
