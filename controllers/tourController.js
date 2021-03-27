@@ -28,7 +28,7 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    //find and return all stored tours in tours collection in natour-primary db
+    // find and return all stored tours in tours collection in natour-primary db
     const data = await Tour.find();
     res.status(200).json({
       status: 'success',
@@ -48,7 +48,7 @@ exports.getAllTours = async (req, res) => {
 
 exports.getTour = async (req, res) => {
   try {
-    //find and return specific tour in tours collection in natour-primary db
+    // find and return specific tour in tours collection in natour-primary db
     const data = await Tour.findById(req.params.id);
     res.status(200).json({
       status: 'success',
@@ -67,11 +67,11 @@ exports.getTour = async (req, res) => {
 };
 
 exports.createTour = async (req, res) => {
-  //We could have also done as below
+  // We could have also done as below
   // const newTour = new Tour(req.body)
   // newTour.save() -> this would have returned a promise in which we could have used 'then' and 'catch' but we are preferring async await
 
-  //Since we are using async await so we are using try catch block. Tour.create() will also return a promise
+  // Since we are using async await so we are using try catch block. Tour.create() will also return a promise
   try {
     const newTour = await Tour.create(req.body);
     console.log('Tour created successfully');
@@ -83,7 +83,7 @@ exports.createTour = async (req, res) => {
     });
   } catch (error) {
     console.log('Error creating Tour document');
-    //400 status code for bad request
+    // 400 status code for bad request
     res.status(400).json({
       status: 'error',
       error: error
@@ -93,7 +93,7 @@ exports.createTour = async (req, res) => {
 
 exports.updateTour = async (req, res) => {
   try {
-    //req.body passed to findByIdAndUpdate will contain the JSON data to be updated for the given id. 'new' true means return a new updated document, runValidators true means that whatever validations we have specified in our Tour model should run on the updated document as well.
+    // req.body passed to findByIdAndUpdate will contain the JSON data to be updated for the given id. 'new' true means return a new updated document, runValidators true means that whatever validations we have specified in our Tour model should run on the updated document as well.
     const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
