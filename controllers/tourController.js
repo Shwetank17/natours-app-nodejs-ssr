@@ -16,15 +16,15 @@ const Tour = require('../models/tourModel');
 //   next();
 // };
 
-exports.checkBody = (req, res, next) => {
-  if (!req.body.name || !req.body.price) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Missing name or price'
-    });
-  }
-  next();
-};
+// exports.checkBody = (req, res, next) => {
+//   if (!req.body.name || !req.body.price) {
+//     return res.status(400).json({
+//       status: 'fail',
+//       message: 'Missing name or price'
+//     });
+//   }
+//   next();
+// };
 
 exports.getAllTours = (req, res) => {
   console.log(req.requestTime);
@@ -53,13 +53,29 @@ exports.getTour = (req, res) => {
   // });
 };
 
-exports.createTour = (req, res) => {
-  res.status(201).json({
-    status: 'success'
-    // data: {
-    //   tour: newTour
-    // }
-  });
+exports.createTour = async (req, res) => {
+  //We could have also done as below
+  // const newTour = new Tour(req.body)
+  // newTour.save() -> this would have returned a promise in which we could have used 'then' and 'catch' but we are preferring async await
+
+  //Since we are using async await so we are using try catch block. Tour.create() will also return a promise
+  try {
+    const newTour = await Tour.create(req.body);
+    console.log('Tour created successfully');
+    res.status(201).json({
+      status: 'success',
+      data: {
+        tour: newTour
+      }
+    });
+  } catch (error) {
+    console.log('Error creating Tour document');
+    //400 status code for bad request
+    res.status(400).json({
+      status: 'error',
+      error: error
+    });
+  }
 };
 
 exports.updateTour = (req, res) => {
