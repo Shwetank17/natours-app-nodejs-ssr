@@ -39,10 +39,15 @@ exports.getAllTours = async (req, res) => {
     const queryObj = { ...req.query };
     const excludeFields = ['page', 'sort', 'limit', 'fields'];
     excludeFields.forEach(el => delete queryObj[el]);
-    const query = Tour.find(queryObj);
-    //Execute the query
+
+    // Advance Filtering to include mongodb operators for a single query. Like for duration we can have 4 mongodb operator filters for more refined filtering
+    let queryStr = JSON.stringify(queryObj);
+    // .replace returns a new string where every occurence of for example 'lt' will be replace with '$lt'
+    queryStr = queryStr.replace(/\b(lt|gt|lte|gte)\b/g, match => `$${match}`);
+    const query = Tour.find(JSON.parse(queryStr));
+    // Execute the query
     const data = await query;
-    //Send the response
+    // Send the response
     res.status(200).json({
       status: 'success',
       results: data.length,
