@@ -44,7 +44,15 @@ exports.getAllTours = async (req, res) => {
     let queryStr = JSON.stringify(queryObj);
     // .replace returns a new string where every occurence of for example 'lt' will be replace with '$lt'
     queryStr = queryStr.replace(/\b(lt|gt|lte|gte)\b/g, match => `$${match}`);
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // Add custom sorting if sent else add default sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdBy');
+    }
     // Execute the query
     const data = await query;
     // Send the response
