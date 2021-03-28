@@ -5,7 +5,7 @@
 	  }
 	],
 	"settings": {
-	  "workbench.colorTheme": "Azure Contrast (rainglow)",
+	  "workbench.colorTheme": "Gruvbox Material Dark",
 	  "files.autoSave": "onFocusChange",
 	  "editor.formatOnSave": true,
 	  "editor.minimap.enabled": true,
@@ -19,6 +19,6 @@
 		"statusBar.background": "#333333",
 		"statusBar.noFolderBackground": "#333333",
 		"statusBar.debuggingBackground": "#263238"
-	  }
+	}
 	}
   }

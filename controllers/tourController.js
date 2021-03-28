@@ -26,6 +26,13 @@ const Tour = require('../models/tourModel');
 //   next();
 // };
 
+exports.aliasTopTour = (req, resp, next) => {
+  req.query.limit = 5;
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name, price, ratingsAverage, summary, difficulty';
+  next();
+};
+
 exports.getAllTours = async (req, res) => {
   try {
     // A way to find filtered results using query params sent from client side and chaining the results
