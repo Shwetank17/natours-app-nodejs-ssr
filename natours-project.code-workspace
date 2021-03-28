@@ -5,7 +5,7 @@
 	  }
 	],
 	"settings": {
-	  "workbench.colorTheme": "Allure Contrast (rainglow)",
+	  "workbench.colorTheme": "Azure Contrast (rainglow)",
 	  "files.autoSave": "onFocusChange",
 	  "editor.formatOnSave": true,
 	  "editor.minimap.enabled": true,

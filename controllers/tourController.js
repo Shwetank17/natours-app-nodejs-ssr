@@ -28,10 +28,24 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    // find and return all stored tours in tours collection in natour-primary db
-    const data = await Tour.find();
+    // A way to find filtered results using query params sent from client side and chaining the results
+    // const tours = await Tour.find()
+    //   .where('duration')
+    //   .equals(5)
+    //   .where('difficulty')
+    //   .equals('easy');
+
+    // Build the query : find and return all stored tours that matches the query params sent from client side
+    const queryObj = { ...req.query };
+    const excludeFields = ['page', 'sort', 'limit', 'fields'];
+    excludeFields.forEach(el => delete queryObj[el]);
+    const query = Tour.find(queryObj);
+    //Execute the query
+    const data = await query;
+    //Send the response
     res.status(200).json({
       status: 'success',
+      results: data.length,
       requestedAt: req.requestTime,
       allTours: {
         data
