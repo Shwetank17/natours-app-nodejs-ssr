@@ -145,3 +145,43 @@ exports.deleteTour = async (req, res) => {
     });
   }
 };
+
+// First example of mongodb aggregation pipeline. This pipeline is created to pass our documents through this pipeline and then show the result as per our pipeline implementation. Tour.aggregate() returns an aggregate object unlike Tour.find() which returns a query object. Each object inside the aggregate array represent a stage of aggregation. These stages are executed in order they are specified.
+exports.getTourStat = async (req, res) => {
+  try {
+    const stat = await Tour.aggregate([
+      // $match filters the result basis the match condition specified. Grouping criteria specified in 2nd stage will happen on the results returned from the match documents.
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } }
+      },
+      // $group groups the output data basis the field defined in '_id' field. If '_id' is set to null then no data grouping will be seen in the response and all data specified will be shown.
+      {
+        $group: {
+          // _id: null,
+          _id: { $toUpper: '$difficulty' },
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingsQuantity' },
+          avgRatings: { $avg: '$ratingsAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' }
+        }
+      },
+      // sort price in ascending order
+      { $sort: { avgPrice: 1 } },
+      { $match: { _id: { $ne: 'EASY' } } }
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      stat: {
+        stat
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'error',
+      error: error
+    });
+  }
+};
