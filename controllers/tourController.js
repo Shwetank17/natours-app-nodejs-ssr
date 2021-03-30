@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel');
+const ApiFeatures = require('../utils/apiFeatures');
 
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
@@ -35,65 +36,22 @@ exports.aliasTopTour = (req, resp, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    // A way to find filtered results using query params sent from client side and chaining the results
-    // const tours = await Tour.find()
-    //   .where('duration')
-    //   .equals(5)
-    //   .where('difficulty')
-    //   .equals('easy');
+    const updatedQueryObj = new ApiFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-    // Build the query : find and return all stored tours that matches the query params sent from client side
-    const queryObj = { ...req.query };
-    const excludeFields = ['page', 'sort', 'limit', 'fields'];
-    excludeFields.forEach(el => delete queryObj[el]);
+    // Execute the query. Note that we are awaiting for updatedQueryObj because it a Promise that is returned from async paginate method.
+    const tours = await (await updatedQueryObj).query;
 
-    // Advance Filtering to include mongodb operators for a single query. Like for duration we can have 4 mongodb operator filters for more refined filtering
-    let queryStr = JSON.stringify(queryObj);
-    // .replace returns a new string where every occurence of for example 'lt' will be replace with '$lt'
-    // 127.0.0.1:3000/api/v1/tours?duration[gt]=5
-    queryStr = queryStr.replace(/\b(lt|gt|lte|gte)\b/g, match => `$${match}`);
-    let query = Tour.find(JSON.parse(queryStr));
-
-    // Add custom sorting if sent else add default sorting
-    // 127.0.0.1:3000/api/v1/tours?sort=difficulty,-price, 127.0.0.1:3000/api/v1/tours?sort=-price
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdBy');
-    }
-
-    // When sent from client, add custom fields in response else send default fields back
-    // 127.0.0.1:3000/api/v1/tours?fields=price,name,difficulty,duration
-    if (req.query.fields) {
-      const fieldBy = req.query.fields.split(',').join(' ');
-      query = query.select(fieldBy);
-    } else {
-      query = query.select('-__v1');
-    }
-
-    // Add pagination
-    // 127.0.0.1:3000/api/v1/tours?page=1&limit=3
-    if (req.query.page) {
-      const page = req.query.page * 1 || 1;
-      const limit = req.query.limit * 1 || 100;
-      const skip = (page - 1) * limit;
-      // skip, skips given number of pages and limit, limits the number of results to the given value
-      query = query.skip(skip).limit(limit);
-      const numTours = await Tour.countDocuments();
-      // Throwing the error below will shift the control of code to catch block
-      if (skip >= numTours) throw new Error('This page does not exist');
-    }
-
-    // Execute the query
-    const data = await query;
     // Send the response
     res.status(200).json({
       status: 'success',
-      results: data.length,
+      results: tours.length,
       requestedAt: req.requestTime,
       allTours: {
-        data
+        tours
       }
     });
   } catch (error) {
