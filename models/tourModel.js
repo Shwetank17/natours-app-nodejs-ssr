@@ -57,7 +57,8 @@ const tourSchema = new mongoose.Schema(
       select: false
     },
     startDates: [Date],
-    slug: [String]
+    slug: [String],
+    secretTour: Boolean
   },
   {
     // Configure virtual property. 'toJSON' and 'toObject' means that if the result is JSON or object, virutal property must be returned. Also mongodb always returns an object on it's query result.
@@ -71,7 +72,7 @@ tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
 
-//Document Middleware(Hooks) : Runs before .save() and .create() mongoose methods, it will not work for insertMany, findOne, findByIdAndUpdate
+//Document Middleware(Hooks) : Allows to run pre and post hooks before for example .save() and .create() mongoose methods, it will not work for insertMany, findOne, findByIdAndUpdate
 
 //Pre Hook
 tourSchema.pre('save', function(next) {
@@ -79,11 +80,24 @@ tourSchema.pre('save', function(next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-
 //Post Hook
 tourSchema.post('save', function(doc, next) {
   console.log('Document saved is...', this);
   //Run your logic as in pre save above
+  next();
+});
+
+//Query Middleware(Hooks) : Allows to run pre and post hooks before for example .find(), deleteOne(), remove(), update() etc mongoose methods. In pre hook we have used a regular expression to include all mongoose query operator that starts with 'find'.
+
+//Pre Hook
+tourSchema.pre(/^find/, function(next) {
+  this.find({ secretTour: { $ne: true } });
+  this.startTime = Date.now();
+  next();
+});
+//Post Hook: 'doc' refers to all the documents returned after the ^find query is executed
+tourSchema.post(/^find/, function(doc, next) {
+  console.log(`Query took ${Date.now() - this.startTime} milliseconds!`);
   next();
 });
 
