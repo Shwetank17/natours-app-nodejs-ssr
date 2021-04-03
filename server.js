@@ -19,10 +19,11 @@ mongoose
     useUnifiedTopology: true
   })
   .then(conObj => {
-    console.log(
-      'Connection object returned from resolved promise of successful remote db connection is : ',
-      conObj
-    );
+    // Uncomment below block if you want to see the connection object
+    // console.log(
+    //   'Connection object returned from resolved promise of successful remote db connection is : ',
+    //   conObj
+    // );
     console.log(
       'Remote connection to MongoDB at Atlas cloud is established...'
     );
