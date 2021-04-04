@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 const ApiFeatures = require('../utils/apiFeatures');
+const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
 // const tours = JSON.parse(
@@ -56,9 +57,14 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getTour = catchAsync(async (req, res) => {
+exports.getTour = catchAsync(async (req, res, next) => {
   // find and return specific tour in tours collection in natour-primary db
   const data = await Tour.findById(req.params.id);
+  if (!data) {
+    return next(
+      new AppError(`No tour found with provided id - ${req.params.id}`)
+    );
+  }
   res.status(200).json({
     status: 'success',
     requestedAt: req.requestTime,
@@ -83,12 +89,17 @@ exports.createTour = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateTour = catchAsync(async (req, res) => {
+exports.updateTour = catchAsync(async (req, res, next) => {
   // req.body passed to findByIdAndUpdate will contain the JSON data to be updated for the given id. 'new' true means return a new updated document, runValidators true means that whatever validations we have specified in our Tour model should run on the updated document as well.
   const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
   });
+  if (!updatedTour) {
+    return next(
+      new AppError(`No tour found with provided id - ${req.params.id}`)
+    );
+  }
   res.status(200).json({
     status: 'success',
     updatedTour: {
@@ -97,8 +108,13 @@ exports.updateTour = catchAsync(async (req, res) => {
   });
 });
 
-exports.deleteTour = catchAsync(async (req, res) => {
+exports.deleteTour = catchAsync(async (req, res, next) => {
   const deletedTour = await Tour.findByIdAndDelete(req.params.id);
+  if (!deletedTour) {
+    return next(
+      new AppError(`No tour found with provided id - ${req.params.id}`)
+    );
+  }
   res.status(200).json({
     status: 'success',
     deletedTour: {
@@ -108,7 +124,7 @@ exports.deleteTour = catchAsync(async (req, res) => {
 });
 
 // First example of mongodb aggregation pipeline. This pipeline is created to pass our documents through this pipeline and then show the result as per our pipeline implementation. Tour.aggregate() returns an aggregate object unlike Tour.find() which returns a query object. Each object inside the aggregate array represent a stage of aggregation. These stages are executed in order they are specified.
-exports.getTourStat = catchAsync(async (req, res) => {
+exports.getTourStat = catchAsync(async (req, res, next) => {
   const stat = await Tour.aggregate([
     // $match filters the result basis the match condition specified. Grouping criteria specified in 2nd stage will happen on the results returned from the match documents.
     {
@@ -142,7 +158,7 @@ exports.getTourStat = catchAsync(async (req, res) => {
 });
 
 // Solving a real world business problem using unwind, project and more
-exports.getMonthlyPlan = catchAsync(async (req, res) => {
+exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   const year = req.params.year * 1;
   const plan = await Tour.aggregate([
     {
