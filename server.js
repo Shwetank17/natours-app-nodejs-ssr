@@ -1,6 +1,16 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
+// here we are subscribing to an event 'unhandledRejection' on process object. An example, console logging a variable that is not defined. This can be done in any file applicable. Here we can abrubly exit instead of doing a close on 'server' instance which is not available at this point of time.
+process.on('uncaughtException', err => {
+  console.log(
+    'uncaughtException occured, error details are : ',
+    err.name,
+    err.message
+  );
+  process.exit(1);
+});
+
 //read config file containing environment variables using dotenv
 dotenv.config({ path: './config.env' });
 const app = require('./app');
@@ -27,12 +37,27 @@ mongoose
     console.log(
       'Remote connection to MongoDB at Atlas cloud is established...'
     );
-  })
-  .catch(error => console.log('There was error connecting to DB', error));
+  });
+// .catch(error => console.log('There was error connecting to DB', error));
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
+});
+
+// here we are subscribing to an event 'undhandledRejection' on process object. An example of this rejection would be when we say change the db password in our config file and put a wrong one there.
+process.on('unhandledRejection', err => {
+  console.log(
+    'unhandledRejection occured, error details are : ',
+    err.name,
+    err.message
+  );
+  // doing a close on 'server' object is good idea to shutdown server gracefully after the server has done handling all the pending request and it's other tasks.
+  server.close(() => {
+    console.log('Server shutdown complete');
+    // 1 denotes exiting process with some exception which in our case would be unhandled rejection.
+    process.exit(1);
+  });
 });
 
 //app.get('env') - will give the value of the environment variable set by express in app.js
