@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { default: slugify } = require('slugify');
-const validator = require('validator');
+// commented as it's actual use not yet found
+// const validator = require('validator');
 
 // Create a mongoose schema for TOURS. The Schema method also accepts second argument that we have used to configure our virtual property 'durationWeeks' to be shown in the resultant data returned from the query to mongodb. Virtuals are when you don't want to persist the property in the database. For example, say a user has a first and last name and you want to combine them to have a "fullName" property, but you don't want to store that in the database because it's redundant. In that scenario, you can create a virtual "fullName" property so you can access their full name in your code without having to concatenate the other two fields every time.
 const tourSchema = new mongoose.Schema(
@@ -12,10 +13,10 @@ const tourSchema = new mongoose.Schema(
       maxlength: [25, 'A tour name can have max 25 characters'],
       minlength: [10, 'A tour should have min 10 characters'],
       // another way of specifying our validator. See other implementation in 'priceDiscount' schema field below
-      validate: [
-        validator.isAlpha,
-        'Tour must contain only alphabet characters'
-      ],
+      // validate: [
+      //   validator.isAlpha,
+      //   'Tour must contain only alphabet characters'
+      // ],
       unique: true,
       trim: true
     },

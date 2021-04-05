@@ -5,7 +5,7 @@
 	  }
 	],
 	"settings": {
-	  "workbench.colorTheme": "Gruvbox Material Dark",
+	  "workbench.colorTheme": "Default Dark+",
 	  "files.autoSave": "onFocusChange",
 	  "editor.formatOnSave": true,
 	  "editor.minimap.enabled": true,
