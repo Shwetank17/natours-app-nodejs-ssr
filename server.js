@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
-// here we are subscribing to an event 'unhandledRejection' on process object. An example, console logging a variable that is not defined. This can be done in any file applicable. Here we can abrubly exit instead of doing a close on 'server' instance which is not available at this point of time.
+// here we are subscribing to an event 'unhandledRejection' on process object. An example, console logging a variable that is not defined. This can be done in any file applicable. Here we can abrubly exit instead of doing a close on 'server' instance which is not available at this point of time. uncaughtExceptions always synchronous uncaughtRejections always asynchronous
 process.on('uncaughtException', err => {
   console.log(
     'uncaughtException occured, error details are : ',

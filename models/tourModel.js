@@ -133,7 +133,7 @@ tourSchema.pre('aggregate', function(next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
-// Post Hook : Not that important
+// Post Hook (for aggregate): Not that important
 
 // Model Middleware(Hooks): Not that important but TBD
 
