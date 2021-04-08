@@ -54,7 +54,7 @@ const tourSchema = new mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
-      // this validator will only run when the document is created
+      // this validator will only run when the document is created and a validator always return either true or false
       validate: {
         validator: function(val) {
           return val < this.price;
