@@ -36,7 +36,7 @@ userSchema.pre('save', async function(next) {
   //return if the password was not modified for example when emailid is updated
   if (!this.isModified(this.password)) return next();
 
-  // salt password using 12 cost and hash the salted password
+  // salt password using 12 cost and hash the salted password to generate the final encyrpted password. If you try to increase the salt value then it would take more time to return the response back because it will be used in salting the password.
   this.password = await bcrypt(this.password, 12);
 
   // passwordConfirm field is only required for validation purpose only, so removing it before to prevent saving it in the database
