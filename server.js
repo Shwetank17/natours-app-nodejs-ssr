@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 process.on('uncaughtException', err => {
   console.log(
     'uncaughtException occured, error details are : ',
+    err,
     err.name,
     err.message
   );
