@@ -30,7 +30,8 @@ const userSchema = new mongoose.Schema({
       }
     }
   },
-  passwordChangedAt: Date
+  passwordChangedAt: Date,
+  role: String
 });
 
 // Important usecase of using pre save hook. This will run only on .create or .save.
