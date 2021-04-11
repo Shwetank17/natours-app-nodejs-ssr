@@ -19,6 +19,16 @@ const handleValidationErrorDb = err => {
   return new AppError(message, 400);
 };
 
+const handleJsonWebTokenError = () => {
+  const message = `Your access token is tampered. Login to generate a new one and then access this resource!`;
+  return new AppError(message, 401);
+};
+
+const handleTokenExpiredError = () => {
+  const message = `Your access token is expired. Login to generate a new one and then access this resource!`;
+  return new AppError(message, 401);
+};
+
 // return all the information back in response in case of environment is dev so that it is helpful in debugging issues in future
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
@@ -64,6 +74,14 @@ module.exports = (err, req, res, next) => {
     // error from mongoose
     if (err.name === 'ValidationError') {
       error = handleValidationErrorDb(err);
+    }
+    // error from jsonwebtoken package
+    if (err.name === 'JsonWebTokenError') {
+      error = handleJsonWebTokenError();
+    }
+    // error from jsonwebtoken package
+    if (err.name === 'TokenExpiredError') {
+      error = handleTokenExpiredError();
     }
     sendErrorProd(error, res);
   }
