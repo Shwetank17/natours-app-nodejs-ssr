@@ -57,16 +57,13 @@ userSchema.methods.correctPassword = async function(
 
 userSchema.methods.changedPasswordAfter = function(jwtIssueAtTime) {
   if (this.passwordChangedAt) {
-    console.log('bbbbb');
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
       10
     );
-    console.log('1111', jwtIssueAtTime, changedTimestamp);
     // this means token is old so we return true so that we don't allow the user to access the route
     return jwtIssueAtTime < changedTimestamp;
   }
-  console.log('2222', jwtIssueAtTime);
   // by default we return false means password was not changed and so token is valid
   return false;
 };

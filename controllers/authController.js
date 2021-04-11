@@ -77,7 +77,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // Check if the token sent is not old i.e the case where token was sent earlier but after sometime user has changed his password and now user is not sending the new token that was issued to him at the time of password change instead sending the old token(although the old token's integrity is intact and has not yet expired but still the token will be considered as old and invalid)
-  console.log('aaaaa', currentUser);
   if (currentUser && currentUser.changedPasswordAfter(decode.iat)) {
     return next(
       new AppError('User recently changed password! Login again to continue'),
