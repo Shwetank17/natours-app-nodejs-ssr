@@ -4,6 +4,7 @@ const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 const Token = require('../utils/authUtils');
 const AppError = require('../utils/appError');
+const sendEmail = require('../utils/email');
 
 exports.createUser = catchAsync(async (req, res, next) => {
   let token = null;
@@ -100,3 +101,56 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // Find the user corresponding to the emailid sent by the client. If there is no user then throw error
+  const { email } = req.body;
+  if (!email) {
+    return next(new AppError('No email id is sent! Send your email id'));
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(
+      new AppError('No user with given emailid found! Try with correct emailid')
+    );
+  }
+  // Generate a random password reset token
+  const resetToken = user.createPasswordResetToken();
+  // Deactivate all the validators specified in our schema. If we don't set this parameter is NOT set to false the required validators during create(or save) will come up.
+  await user.save({ validateBeforeSave: false });
+
+  // send resetToken to user's email using nodemailer
+  const resetUrl = `${req.protocol}://${
+    req.hostname
+  }/api/v1/users/resetToken/${resetToken}`;
+
+  const message = `You recently forgot your password. Click on the link ${resetUrl} to reset your password. Ignore if you haven't initiated this request.`;
+
+  try {
+    await sendEmail({
+      email,
+      subject: 'Your password reset token! (Valid for 10 mins only)',
+      message
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Reset token sent successfully to your email id!'
+    });
+  } catch (err) {
+    console.log('1111', err);
+    // undoing the changes done when we set these two properties while creating the resetToken
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    // 500 error code because this is the error happened on the server so it has to be an error code that starts with 5 and 500 is general so we used it.
+    return next(
+      new AppError(
+        'There was some problem sending the reset token. Try again later!',
+        500
+      )
+    );
+  }
+});
+
+exports.resetPassword = (req, res, next) => {};

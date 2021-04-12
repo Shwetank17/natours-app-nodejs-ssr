@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -31,7 +32,9 @@ const userSchema = new mongoose.Schema({
     }
   },
   passwordChangedAt: Date,
-  role: String
+  role: String,
+  passwordResetToken: String,
+  passwordResetExpires: Date
 });
 
 // Important usecase of using pre save hook. This will run only on .create or .save.
@@ -66,6 +69,22 @@ userSchema.methods.changedPasswordAfter = function(jwtIssueAtTime) {
   }
   // by default we return false means password was not changed and so token is valid
   return false;
+};
+
+userSchema.methods.createPasswordResetToken = function() {
+  // generate a random hexadecimal string of 32 character using inbuilt crypto library of nodejs
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // generate a resetToken hash(encrypt it) that will be saved in database to prevent it's misuse in case database is compromised
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // set expiry of 10 mins for passwordResetToken
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
