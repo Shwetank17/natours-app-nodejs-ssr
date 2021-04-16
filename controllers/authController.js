@@ -1,5 +1,6 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 const Token = require('../utils/authUtils');
@@ -138,7 +139,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       message: 'Reset token sent successfully to your email id!'
     });
   } catch (err) {
-    console.log('1111', err);
     // undoing the changes done when we set these two properties while creating the resetToken
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
@@ -153,4 +153,33 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.resetPassword = (req, res, next) => {};
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const { resetToken } = req.params;
+  if (!resetToken) {
+    return next(new AppError('No token sent from client!'), 400);
+  }
+  // hash the reset token so that it can be used to find the user with that reset token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  console.log('11111', hashedToken, Date.now());
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return next(new AppError('Token is invalid or expired!'), 400);
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  // We have to ensure that below two values are removed from database so that it can't be misused later
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  // here we haven't passed { validator : false } because we want our schema validators to run before saving this data
+  await user.save();
+  // return a new jwt back to client
+  const token = await Token(user._id);
+  res.status(200).json({ status: 'success', token: token });
+});
