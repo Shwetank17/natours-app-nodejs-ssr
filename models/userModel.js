@@ -62,6 +62,7 @@ userSchema.methods.correctPassword = async function(
   userPassword
 ) {
   // The salt is appended to the hashed password during signup. When you call .compare() on it, bcrypt will extract the salt and use it to hash the plaintext password. If the results match then it passes.
+  console.log('1111', candidatePassword, userPassword);
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 

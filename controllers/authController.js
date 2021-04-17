@@ -25,7 +25,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
   res.status(201).json({
     userData: {
       data: newUser,
-      jwt: token
+      token: token
     }
   });
 });
@@ -163,7 +163,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
-  console.log('11111', hashedToken, Date.now());
   const user = await User.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() }
@@ -182,4 +181,29 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // return a new jwt back to client
   const token = await Token(user._id);
   res.status(200).json({ status: 'success', token: token });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // Get the user from the collection and select it's password as true so that it can be used later
+  const user = await User.findById(req.user._id).select('password');
+  console.log('aaaaa', user, req.body);
+
+  // Verify if the current password sent by client matches the one stored in the databse for the same users
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    // 400 for unauthorized access
+    return next(new AppError('Your current password is wrong', 400));
+  }
+
+  // If verification is success update the password password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // Log the user in and send a fresh JWT back
+  const token = await Token(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token: token
+  });
 });
