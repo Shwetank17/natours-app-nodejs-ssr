@@ -48,9 +48,29 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     new: true,
     runValidators: true
   });
+  if (!user) {
+    return next(
+      new AppError('There was some error updating the user! Try again later!')
+    );
+  }
   res.status(200).json({
     status: 'success',
     user: user
+  });
+});
+
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  // Get the user's _id that needs to be deleted and set it's 'active' property to false
+  const user = await User.findByIdAndUpdate(req.user._id, { active: false });
+  if (!user) {
+    return next(
+      new AppError('There was some error deleting the user! Try again later!')
+    );
+  }
+  // 204 means success in deletion. Postman doesn't show the response even if we send it from here like below
+  res.status(204).json({
+    status: 'success',
+    data: null
   });
 });
 

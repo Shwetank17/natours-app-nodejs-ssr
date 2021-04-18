@@ -34,7 +34,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   role: String,
   passwordResetToken: String,
-  passwordResetExpires: Date
+  passwordResetExpires: Date,
+  active: {
+    type: String,
+    default: true
+  }
 });
 
 // Important usecase of using pre save hook. This will run only on .create or .save. Also multiple hooks are executed in the order they are defined.
@@ -55,6 +59,12 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('password') || this.isNew) return next();
   // In some cases JWT during password reset process is sent before the 'passwordChangedAt' property is updated in database. So a user cannot use that JWT to access any of the protected route because technically it is issued before the password was changed so logically it's not a valid JWT. subtracting 1 sec from current date will ensure that it's value will always be greated that the JWT issue at time during password reset process.
   this.passwordChangedAt = Date.now() - 1000;
+});
+
+userSchema.pre(/^find/, async function(next) {
+  // 'this' here refers to the query about to be executed
+  this.find({ active: { $ne: false } });
+  next();
 });
 
 userSchema.methods.correctPassword = async function(

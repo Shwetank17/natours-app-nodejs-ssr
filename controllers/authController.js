@@ -19,9 +19,11 @@ exports.createUser = catchAsync(async (req, res, next) => {
   });
   if (newUser && newUser._id) {
     token = await Token(newUser._id);
+    delete newUser.password;
   } else {
     next(new AppError(`Error creating account!`, 404));
   }
+
   res.status(201).json({
     userData: {
       data: newUser,
@@ -31,7 +33,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  // extract email and password from the incoming requestTime
+  // extract email and password from the incoming request
   const { email, password } = req.body;
   // check if email and password exists else return error
   if (!email || !password) {
@@ -186,7 +188,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // Get the user from the collection and select it's password as true so that it can be used later
   const user = await User.findById(req.user._id).select('password');
-  console.log('aaaaa', user, req.body);
 
   // Verify if the current password sent by client matches the one stored in the databse for the same users
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
@@ -202,6 +203,17 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // Log the user in and send a fresh JWT back
   const token = await Token(user._id);
 
+  // Send jwt as cookie back to the user so that it can be automatically saved in browser
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    // this option ensures that the cookie cannot be modified by browser by an XSS attack on the browser
+    httpOnly: true
+  };
+  // secure true will ensure that the cookie will be sent/recieve on only in https secure channel
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+  res.cookie('jwt', token, cookieOptions);
   res.status(200).json({
     status: 'success',
     token: token
