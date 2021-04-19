@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const sanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -35,11 +36,25 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '10kb' }));
 
 // Middleware to do data sanitization and prevent against NoSql injection like doing a login as :
-// {"email": {"$gt": ""}, "password": password12345 } - this will return all the users and whatever password is sent in the body will be matched with the first one, if it matches login will happen, which is bad!
+// {"email": {"$gt": ""}, "password": password12345 } - this will return all the users and whatever password is sent in the body will be matched with the first one, if it matches login will happen, which is bad! Notice that we have used this middleware after the above middleware because after the above middleware executes it's work then we have req.body ready to be sanitized
 app.use(sanitize());
 
-// Middleware to do data sanitization and prevent against XSS attacks
+// Middleware to do data sanitization and prevent against XSS attacks like for example if the user sends html data then this package will convert that html to string so that it cannot be executed
 app.use(xss());
+
+// Middleware to prevent http parameter pollution, for example if we send the request as 127.0.0.1:3000/api/v1/tours?sort=duration&sort=price. Here we are sending multiple sort. hpp will only send the last sort i.e sort=price and the API will just work fine. This package has lot of flexibility to whitelist some paramters that we can send as multiple like for example 127.0.0.1:3000/api/v1/tours?duration=40&duration=70 which our API supports.
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price'
+    ]
+  })
+);
 
 // Middleware to serve files from a static folder. So in case if any assest is not found then Express will look for that file in the static folder also if specified like below
 app.use(express.static(`${__dirname}/public`));
