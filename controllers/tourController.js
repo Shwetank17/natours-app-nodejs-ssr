@@ -43,7 +43,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     .limitFields()
     .paginate();
 
-  // Execute the query. Note that we are awaiting for updatedQueryObj because it a Promise that is returned from async paginate method.
+  // Execute the query. Note that we are awaiting for updatedQueryObj because it a Promise that is returned from async paginate method. Also we are having another await right after tours = ...It's because we have to executed the final query.
   const tours = await (await updatedQueryObj).query;
 
   // Send the response

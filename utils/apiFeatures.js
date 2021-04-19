@@ -18,13 +18,14 @@ class ApiFeatures {
     // Build the query : find and return all stored tours that matches the query params sent from client side
     if (this.queryString) {
       const queryObj = { ...this.queryString };
+      // Excluding below fields because these are not valid schema fields or mongodb operator
       const excludeFields = ['page', 'sort', 'limit', 'fields'];
       excludeFields.forEach(el => delete queryObj[el]);
 
       // Advance Filtering to include mongodb operators for a single query. Like for duration we can have 4 mongodb operator filters for more refined filtering
       let queryStr = JSON.stringify(queryObj);
       // .replace returns a new string where every occurence of for example 'lt' will be replace with '$lt'
-      // 127.0.0.1:3000/api/v1/tours?duration[gt]=5
+      // 127.0.0.1:3000/api/v1/tours?duration[gt]=5 -> this comes in req.query as { duration : {gt: 5}} which we need to modify to { duration : {$gt: 5}}
       queryStr = queryStr.replace(/\b(lt|gt|lte|gte)\b/g, match => `$${match}`);
       this.query = this.query.find(JSON.parse(queryStr));
     }
