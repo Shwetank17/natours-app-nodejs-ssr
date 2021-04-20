@@ -20,14 +20,12 @@ mongoose
   .then(() => console.log('Database connection successful!'));
 
 // READ JSON FILE
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 // IMPORT DATA INTO DB
 const importData = async () => {
   try {
-    // We can pass an array of tour objects to 'create' method on Tour model. This method will created separate documents for each element in the 'tours' array and then will save the data in database
+    // We can pass an array of tour objects to 'create' method on Tour model. This method will create separate documents for each element in the 'tours' array and then will save the data in database
     await Tour.create(tours);
     console.log('Data successfully loaded!');
   } catch (err) {

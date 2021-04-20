@@ -84,7 +84,33 @@ const tourSchema = new mongoose.Schema(
     },
     startDates: [Date],
     slug: [String],
-    secretTour: Boolean
+    secretTour: Boolean,
+    // startLocation is a type of an embedded document i.e a document inside a document
+    startLocation: {
+      // This is GEOJSON in terms on mongo i.e a document containing geospatial data
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    // locations is a type of an embedded document i.e a document inside a document
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number
+      }
+    ]
   },
   {
     // Configure virtual property. 'toJSON' and 'toObject' means that if the result is JSON or object, virutal property must be returned. Also mongodb always returns an object on it's query result.
