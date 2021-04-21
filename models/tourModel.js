@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { default: slugify } = require('slugify');
-const User = require('../models/userModel');
+// commented as it was used for showing embedding documents
+// const User = require('../models/userModel');
 // commented as it's actual use not yet found
 // const validator = require('validator');
 
@@ -112,7 +113,13 @@ const tourSchema = new mongoose.Schema(
         day: Number
       }
     ],
-    guides: Array
+    // guides: Array -> commented as it was used to show embedding of documents
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+      }
+    ]
   },
   {
     // Configure virtual property. 'toJSON' and 'toObject' means that if the result is JSON or object, virutal property must be returned. Also mongodb always returns an object on it's query result.
@@ -135,13 +142,14 @@ tourSchema.pre('save', function(next) {
   next();
 });
 
-tourSchema.pre('save', async function(next) {
-  // This pre save hook is an example of embedding a document inside other document i.e user document inside the tour document. Since this hook only works in case of 'create' or 'save' so remember it won't work in case of updates. Remember that embedding has a drawback here for example if the user changes emailid or any of it's user specific data like 'role' then we would have to find out all the tours that has the given user as it's guide and update the embedded user document there also. This can become quite frustrating in large data set.s
-  const guidesPromises = this.guides.map(idOfUser => User.findById(idOfUser));
-  // overwriting the guides values with the user documents obtained from resolved promises.
-  this.guides = await Promise.all(guidesPromises);
-  next();
-});
+// Commented below hook as referencing of users in guides array better that embedding of users in guides array
+// tourSchema.pre('save', async function(next) {
+//   // This pre save hook is an example of embedding a document inside other document i.e user document inside the tour document. Since this hook only works in case of 'create' or 'save' so remember it won't work in case of updates. Remember that embedding has a drawback here for example if the user changes emailid or any of it's user specific data like 'role' then we would have to find out all the tours that has the given user as it's guide and update the embedded user document there also. This can become quite frustrating in large data set.s
+//   const guidesPromises = this.guides.map(idOfUser => User.findById(idOfUser));
+//   // overwriting the guides values with the user documents obtained from resolved promises.
+//   this.guides = await Promise.all(guidesPromises);
+//   next();
+// });
 
 // Post Hook
 tourSchema.post('save', function(doc, next) {
