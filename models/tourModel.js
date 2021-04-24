@@ -166,7 +166,7 @@ tourSchema.pre(/^find/, function(next) {
   this.startTime = Date.now();
   next();
 });
-// pre hook in any of the query(that passes the regex specified) to tour collection to ensure that we populate the response result with the referenced document(in this case we have referenced mongoose id's(pointing to User document in user's collection) in the guides field in the tours. This reference denotes the user id's(mongoose object id) of guides assigned to that tours.
+// pre hook in any of the query(that passes the specified regex) to tour collection to ensure that we populate the response result with the referenced document(in this case we have referenced mongoose id's(pointing to User document in user's collection) in the guides field in the tours. This reference denotes the user id's(mongoose object id) of guides assigned to that tours.
 tourSchema.pre(/^find/, function(next) {
   this.populate({ path: 'guides', select: '-__v -passwordChangedAt' });
   next();
