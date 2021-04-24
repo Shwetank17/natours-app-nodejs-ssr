@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel');
+const Review = require('../models/reviewModel');
 const ApiFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
@@ -198,5 +199,20 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     plan: {
       plan
     }
+  });
+});
+
+exports.createReview = catchAsync(async (req, res, next) => {
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  if (!req.body.user) req.body.user = req.user._id;
+  // here we are not sanitizing req.body because our 'Tour' model is strong enough to discard any unwanted values
+  const review = await Review.create(req.body);
+  if (!review) {
+    // didn't know the error code for this case so setting 500
+    throw new AppError('Error creating review in db!', 500);
+  }
+  res.status(201).json({
+    status: 'success',
+    createdReview: review
   });
 });
