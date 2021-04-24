@@ -133,6 +133,12 @@ tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
 
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // 'tour' is the field in Review model where the id of tour is stored
+  localField: '_id' // '_id' refers to the id of the tour in the Tour model
+});
+
 // Document Middleware(Hooks) : Allows to run pre and post hooks for example .save() and .create() mongoose methods, it will not work for insertMany, findOne, findByIdAndUpdate
 
 // Pre Hook

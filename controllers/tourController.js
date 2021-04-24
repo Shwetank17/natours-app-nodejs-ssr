@@ -59,7 +59,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   // find and return specific tour in tours collection in natour-primary db
-  const data = await Tour.findById(req.params.id);
+  const data = await Tour.findById(req.params.id).populate('reviews');
   if (!data) {
     return next(
       new AppError(`No tour found with provided id - ${req.params.id}`, 404)
