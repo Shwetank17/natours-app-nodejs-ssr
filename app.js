@@ -33,7 +33,7 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Middleware that ensure the body is parsed and attached to the incoming request so that it can be used later as req.body.Limit has been set to 10kb so that an attacker cannot overload the server with heavy payloads
+// Middleware that ensure the body is parsed and attached to the incoming request so that it can be used later as req.body. Limit has been set to 10kb so that an attacker cannot overload the server with heavy payloads
 app.use(express.json({ limit: '10kb' }));
 
 // Middleware to do data sanitization and prevent against NoSql injection like doing a login as :

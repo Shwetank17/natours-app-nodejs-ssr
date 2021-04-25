@@ -73,7 +73,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     if (!currentUser) {
       return next(
         new AppError(
-          'Sent token has no associated accounts! Login and try again.',
+          'Sent token has no associated accounts! Create account and try again.',
           401
         )
       );
