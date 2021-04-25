@@ -1,5 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const factory = require('./handlerFactory');
 const User = require('../models/userModel');
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
@@ -69,8 +70,8 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   }
   // 204 means success in deletion. Postman doesn't show the response even if we send it from here like below
   res.status(204).json({
-    status: 'success',
-    data: null
+    status:
+      'User is now inactive! Will be deleted some days later from database!'
   });
 });
 
@@ -81,16 +82,13 @@ exports.getUser = (req, res) => {
   });
 };
 
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
-  });
-};
+// password CANNOT be updated via this route as we have signup route for that
+exports.updateUser = factory.updateOne(User);
 
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
-  });
-};
+exports.deleteUser = factory.deleteOne(User);
+// exports.deleteUser = (req, res) => {
+//   res.status(500).json({
+//     status: 'error',
+//     message: 'This route is not yet defined!'
+//   });
+// };

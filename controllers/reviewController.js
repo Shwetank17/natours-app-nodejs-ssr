@@ -1,4 +1,5 @@
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 const Review = require('../models/reviewModel');
 const AppError = require('../utils/appError');
 
@@ -25,17 +26,15 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createReview = catchAsync(async (req, res, next) => {
+// middleware to find tourId and userId and attach to body before creating a review. This is done to keep our createOne function in factory clean.
+exports.setTourUserId = (req, res, next) => {
   if (!req.body.tour) req.body.tour = req.params.tourId;
   req.body.user = req.user._id;
-  // here we are not sanitizing req.body because our 'Tour' model is strong enough to discard any unwanted values
-  const review = await Review.create(req.body);
-  if (!review) {
-    // didn't know the error code for this case so setting 500
-    throw new AppError('Error creating review in db!', 500);
-  }
-  res.status(201).json({
-    status: 'success',
-    createdReview: review
-  });
-});
+  next();
+};
+
+exports.createReview = factory.createOne(Review);
+
+exports.updateReview = factory.updateOne(Review);
+
+exports.deleteReview = factory.deleteOne(Review);

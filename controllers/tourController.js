@@ -2,6 +2,7 @@ const Tour = require('../models/tourModel');
 const ApiFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
@@ -74,54 +75,23 @@ exports.getTour = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createTour = catchAsync(async (req, res, next) => {
-  // We could have also done as below
-  // const newTour = new Tour(req.body)
-  // newTour.save() -> this would have returned a promise in which we could have used 'then' and 'catch' but we are preferring async await
+exports.createTour = factory.createOne(Tour);
 
-  // Since we are using async await so we are using try catch block. Tour.create() will also return a promise
-  const newTour = await Tour.create(req.body);
-  res.status(201).json({
-    status: 'success',
-    tourCreated: {
-      newTour
-    }
-  });
-});
+exports.updateTour = factory.updateOne(Tour);
 
-exports.updateTour = catchAsync(async (req, res, next) => {
-  // req.body passed to findByIdAndUpdate will contain the JSON data to be updated for the given id. 'new' true means return a new updated document, runValidators true means that whatever validations we have specified in our Tour model should run on the updated document as well.
-  const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
-  if (!updatedTour) {
-    return next(
-      new AppError(`No tour found with provided id - ${req.params.id}`, 404)
-    );
-  }
-  res.status(200).json({
-    status: 'success',
-    updatedTour: {
-      updatedTour
-    }
-  });
-});
-
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  const deletedTour = await Tour.findByIdAndDelete(req.params.id);
-  if (!deletedTour) {
-    return next(
-      new AppError(`No tour found with provided id - ${req.params.id}`, 404)
-    );
-  }
-  res.status(200).json({
-    status: 'success',
-    deletedTour: {
-      deletedTour
-    }
-  });
-});
+exports.deleteTour = factory.deleteOne(Tour);
+// Below block is commented to remember how we introduced factory
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//   const deletedTour = await Tour.findByIdAndDelete(req.params.id);
+//   if (!deletedTour) {
+//     return next(
+//       new AppError(`No tour found with provided id - ${req.params.id}`, 404)
+//     );
+//   }
+//   res.status(200).json({
+//     status: 'Tour deleted successfully!'
+//   });
+// });
 
 // First example of mongodb aggregation pipeline. This pipeline is created to pass our documents through this pipeline and then show the result as per our pipeline implementation. Tour.aggregate() returns an aggregate object unlike Tour.find() which returns a query object. Each object inside the aggregate array represent a stage of aggregation. These stages are executed in order they are specified.
 exports.getTourStat = catchAsync(async (req, res, next) => {
@@ -161,6 +131,7 @@ exports.getTourStat = catchAsync(async (req, res, next) => {
 exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   const year = req.params.year * 1;
   const plan = await Tour.aggregate([
+    // $unwind : Each tour document has 'startDates' array with multiple dates. Say there are 9 documents and each having 3 dates in their respective 'startDates' field. unwind will take up those dates say for a given tour it will create 3 documents with same values except each of the document will have the startDate field having one of the value(from 3 values originally present in it)
     {
       $unwind: '$startDates'
     },
