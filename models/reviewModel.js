@@ -34,6 +34,7 @@ const reviewSchema = new mongoose.Schema(
 );
 
 reviewSchema.pre(/^find/, function(next) {
+  // Here we are populating the response of the /^find/ query with two more fields 'tour' and 'user' such that only 'name' field will be seen inside the document of 'tour' field and 'name' and 'photo' field inside the document of 'user' field.
   this.populate({
     path: 'tour',
     select: 'name '

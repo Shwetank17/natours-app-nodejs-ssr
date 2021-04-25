@@ -1,6 +1,4 @@
 const Tour = require('../models/tourModel');
-const ApiFeatures = require('../utils/apiFeatures');
-const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 
@@ -37,43 +35,9 @@ exports.aliasTopTour = (req, resp, next) => {
   next();
 };
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  const updatedQueryObj = new ApiFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
+exports.getAllTours = factory.getAll(Tour);
 
-  // Execute the query. Note that we are awaiting for updatedQueryObj because it a Promise that is returned from async paginate method. Also we are having another await right after tours = ...It's because we have to executed the final query.
-  const tours = await (await updatedQueryObj).query;
-
-  // Send the response
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    requestedAt: req.requestTime,
-    allTours: {
-      tours
-    }
-  });
-});
-
-exports.getTour = catchAsync(async (req, res, next) => {
-  // find and return specific tour in tours collection in natour-primary db
-  const data = await Tour.findById(req.params.id).populate('reviews');
-  if (!data) {
-    return next(
-      new AppError(`No tour found with provided id - ${req.params.id}`, 404)
-    );
-  }
-  res.status(200).json({
-    status: 'success',
-    requestedAt: req.requestTime,
-    requestedTour: {
-      data
-    }
-  });
-});
+exports.getTour = factory.getOne(Tour);
 
 exports.createTour = factory.createOne(Tour);
 

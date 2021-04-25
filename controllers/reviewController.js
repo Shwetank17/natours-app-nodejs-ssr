@@ -1,9 +1,15 @@
-const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
-const Review = require('../models/reviewModel');
 const AppError = require('../utils/appError');
+const Review = require('../models/reviewModel');
 
-exports.getAllReviews = catchAsync(async (req, res, next) => {
+// middleware to find tourId and userId and attach to body before creating a review. This is done to keep our createOne function in factory clean.
+exports.setTourUserId = (req, res, next) => {
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  req.body.user = req.user._id;
+  next();
+};
+
+exports.checkTourId = (req, res, next) => {
   let filter = {};
   // show reviews only related to a given tourId
   if (req.params.tourId) filter = { tour: req.params.tourId };
@@ -17,21 +23,12 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
       'A review can be returned only for a requested tour! Check if you are sending tourId in your request params.'
     );
   }
-  const review = await Review.find(filter);
-
-  res.status(200).json({
-    status: 'success',
-    count: review.length,
-    allReviews: review
-  });
-});
-
-// middleware to find tourId and userId and attach to body before creating a review. This is done to keep our createOne function in factory clean.
-exports.setTourUserId = (req, res, next) => {
-  if (!req.body.tour) req.body.tour = req.params.tourId;
-  req.body.user = req.user._id;
   next();
 };
+
+exports.getAllReviews = factory.getAll(Review);
+
+exports.getReview = factory.getOne(Review);
 
 exports.createReview = factory.createOne(Review);
 

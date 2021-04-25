@@ -8,13 +8,19 @@ const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(authController.protect, reviewController.getAllReviews)
+  .get(
+    authController.protect,
+    reviewController.checkTourId,
+    reviewController.getAllReviews
+  )
   .post(
     authController.protect,
     authController.restrictTo('user'),
     reviewController.setTourUserId,
     reviewController.createReview
   );
+
+router.get('/:id', authController.protect, reviewController.getReview);
 
 router.patch('/:id', authController.protect, reviewController.updateReview);
 

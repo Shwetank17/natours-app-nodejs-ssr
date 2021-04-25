@@ -3,20 +3,6 @@ const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
 const User = require('../models/userModel');
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-
-  // Send the response
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    requestedAt: req.requestTime,
-    allUsers: {
-      users
-    }
-  });
-});
-
 const filterObj = (incomingBody, ...validFieldsUpdatable) => {
   const validUpdatableObj = {};
   Object.keys(incomingBody).forEach(incomingKey => {
@@ -75,12 +61,9 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
-  });
-};
+exports.getAllUsers = factory.getAll(User);
+
+exports.getUser = factory.getOne(User);
 
 // password CANNOT be updated via this route as we have signup route for that
 exports.updateUser = factory.updateOne(User);
