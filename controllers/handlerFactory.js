@@ -78,7 +78,7 @@ exports.createOne = Model => {
 
 exports.getOne = (Model, populateObj) => {
   return catchAsync(async (req, res, next) => {
-    // there is a case when we want to populate reviews in getting a single tour. For that we pass populateObj. So handling that condition here. Although it's not recommended to handle it here as this logic is supposed to reside in the controller that is calling 'getOne' method.
+    // there is a case when we want to populate reviews(virtual populate) in getting a single tour. For that we pass populateObj. So handling that condition here. Although it's not recommended to handle it here as this logic is supposed to reside in the controller that is calling 'getOne' method.
     let query = Model.findById(req.params.id);
     query = query.populate(populateObj);
     // find and return specific document by id in Model's collection in natour-primary db

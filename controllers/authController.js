@@ -119,7 +119,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
   // Generate a random password reset token
   const resetToken = user.createPasswordResetToken();
-  // Deactivate all the validators specified in our schema. If we don't set this parameter is NOT set to false the required validators during create(or save) will come up.
+  // Deactivate all the validators specified in our schema. If we don't set this parameter to false the required validators during create(or save) will come up like 'emalid', 'password', 'confirmPassword' etc.
   await user.save({ validateBeforeSave: false });
 
   // send resetToken to user's email using nodemailer

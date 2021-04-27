@@ -37,7 +37,8 @@ exports.aliasTopTour = (req, resp, next) => {
 
 exports.getAllTours = factory.getAll(Tour);
 
-exports.getTour = factory.getOne(Tour);
+// {path: 'reviews'} is an example of virtual populate strategy
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
 exports.createTour = factory.createOne(Tour);
 

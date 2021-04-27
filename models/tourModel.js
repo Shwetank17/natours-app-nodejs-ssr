@@ -128,11 +128,15 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// creating indexes(unique and compound) for frequently queried fields-
+tourSchema.index({ price: -1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
 // Creating a virtual property that we can get on query to db. The value of this virtual property is defined inside of function
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
 
+// This is an example of adding a virtual field that contains a reference to an mongodb ObjectId of some other model. This property here 'review' needs to be populated explicitly when we are querying the Tour model. For this we have populated this field in 'getTour' route.
 tourSchema.virtual('reviews', {
   ref: 'Review',
   foreignField: 'tour', // 'tour' is the field in Review model where the id of tour is stored
