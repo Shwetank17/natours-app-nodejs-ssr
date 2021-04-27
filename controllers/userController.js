@@ -61,6 +61,12 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
+// faking as if user.id is coming from the params. We did this to leverage the functionality of getUser method.
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.getAllUsers = factory.getAll(User);
 
 exports.getUser = factory.getOne(User);
