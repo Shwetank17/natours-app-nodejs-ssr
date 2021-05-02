@@ -143,7 +143,8 @@ tourSchema.virtual('reviews', {
   localField: '_id' // '_id' refers to the id of the tour in the Tour model
 });
 
-// Document Middleware(Hooks) : Allows to run pre and post hooks for example .save() and .create() mongoose methods, it will not work for insertMany, findOne, findByIdAndUpdate
+// Document Middleware(Hooks) : Allows to run pre and post hooks for example on mongodb operations like
+// .save() and .create() only. It will NOT work for insertMany, findOne, findByIdAndUpdate
 
 // Pre Hook
 tourSchema.pre('save', function(next) {
@@ -176,7 +177,7 @@ tourSchema.pre(/^find/, function(next) {
   this.startTime = Date.now();
   next();
 });
-// pre hook in any of the query(that passes the specified regex) to tour collection to ensure that we populate the response result with the referenced document(in this case we have referenced mongoose id's(pointing to User document in user's collection) in the guides field in the tours. This reference denotes the user id's(mongoose object id) of guides assigned to that tours.
+// pre hook in any of the query(that passes the specified regex) to tour collection to ensure that we populate the response result with the referenced field(in this case we have referenced mongoose id pointing to User document in user's collection) which is 'guides' field. This value in this guides field denotes the user id's(mongoose object id) of the guide assigned to the tour.
 tourSchema.pre(/^find/, function(next) {
   this.populate({ path: 'guides', select: '-__v -passwordChangedAt' });
   next();
