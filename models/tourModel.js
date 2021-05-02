@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const { default: slugify } = require('slugify');
+
+const GEOSPATIAL_OPERATOR_TEST = /^[$]geo[a-zA-Z]*/;
+
 // commented as it was used for showing embedding documents
 // const User = require('../models/userModel');
 // commented as it's actual use not yet found
@@ -131,7 +134,10 @@ const tourSchema = new mongoose.Schema(
 
 // creating indexes(unique and compound) for frequently queried fields. This helps in fast retrieval in subsequent queries on the same field.
 tourSchema.index({ price: -1, ratingsAverage: -1 });
+// index on slug was created for future use not known as of now
 tourSchema.index({ slug: 1 });
+// index on startLocation field as it stores the geolocation data of type specified by GeoJSON. In order for the geolocation queries to execute we need to have an index on the field that stores the geolocation database. For geospatial data value of the index can be '2dsphere' if the data describes real points on earth like sphere or we can use '2d' if we are using fictional points on a 2d plane. In our case there are real points
+tourSchema.index({ startLocation: '2dsphere' });
 
 // Creating a virtual property that we can get on query to db. The value of this virtual property is defined inside of function
 tourSchema.virtual('durationWeeks').get(function() {
@@ -193,7 +199,15 @@ tourSchema.post(/^find/, function(doc, next) {
 // Aggregation Middleware(Hooks) : Allows to run pre and post hooks for any aggregation pipeline query. Below we are filtering out the secret tour from any of our aggregation query result by adding a extra '$match' filter object with condition to not show secretTour.
 // Pre Hook
 tourSchema.pre('aggregate', function(next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  // console.log(JSON.stringify(this.pipeline(), null, 2)); - pretty way to print nested objects in console
+  const geoAggregate = this.pipeline().filter(
+    // finding if the pipeline stage name has any geo operator using the regex. 'search' method on a string returns -1 if the match is not found else non zero value
+    stage => Object.keys(stage)[0].search(GEOSPATIAL_OPERATOR_TEST) !== -1
+  );
+
+  if (geoAggregate.length === 0) {
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  }
   next();
 });
 // Post Hook (for aggregate): Not that important

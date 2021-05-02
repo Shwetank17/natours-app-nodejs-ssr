@@ -10,8 +10,18 @@ const router = express.Router();
 // checkid middleware will run before invoking any of the tour related routes
 // router.param('id', tourController.checkID);
 
-// Middleware to redirect the request to this path to reviewRouter where it actually belongs
+// Middleware to redirect the request to this path to reviewRouter where it actually needs to be processed but keeping the path here as it makes sense to keep it here as it is a review on a given tourId.
 router.use('/:tourId/reviews', reviewRouter);
+
+router.get(
+  '/tours-within/:distance/center/:latlng/unit/:unit',
+  tourController.getToursWithin
+);
+
+router.get(
+  '/tours-within/center/:latlng/unit/:unit',
+  tourController.getDistances
+);
 
 router
   .route('/top-5-cheap')

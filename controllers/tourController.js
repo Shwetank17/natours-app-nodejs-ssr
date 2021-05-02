@@ -1,6 +1,7 @@
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+const AppError = require('../utils/appError');
 
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
@@ -133,6 +134,83 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     records: plan.length,
     plan: {
       plan
+    }
+  });
+});
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [latitude, longitude] = latlng.split(',');
+
+  // the divisor is the radius of the earth in miles and kilometers respectively.
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!latitude || !longitude) {
+    return next(
+      new AppError(
+        'Latitudes and Longitudes are required in correct format in order to show the results!'
+      )
+    );
+  }
+
+  const tours = Tour.find({
+    startLocation: {
+      $geoWithin: { $centerSphere: [[longitude, latitude], radius] }
+    }
+  });
+
+  // Send the response
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    requestedAt: req.requestTime,
+    data: {
+      tours
+    }
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [latitude, longitude] = latlng.split(',');
+
+  // if unit is not sent in 'mi' then we will convert the distance to kilometers by default
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!latitude || !longitude) {
+    return next(
+      new AppError(
+        'Latitudes and Longitudes are required in correct format in order to show the results!'
+      )
+    );
+  }
+
+  const tours = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [longitude * 1, latitude * 1]
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1
+      }
+    }
+  ]);
+
+  // Send the response
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    requestedAt: req.requestTime,
+    data: {
+      tours
     }
   });
 });
