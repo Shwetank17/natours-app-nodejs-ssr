@@ -35,6 +35,9 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+// This compound index is setup to be created when a review is created for a given tour by a given user. This index will be unique and when same user tries to post another review for the same tour then during the creating process when mongo will try to create a new compound index again it will find out that the new compound index is already present and it will error out prevent the same user to create another review on the same tour again.
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 // Query Middleware
 reviewSchema.pre(/^find/, function(next) {
   // Here we are populating the response of the /^find/ query with two more fields 'tour' and 'user' such that only 'name' field will be seen inside the document of 'tour' field and 'name' and 'photo' field inside the document of 'user' field.

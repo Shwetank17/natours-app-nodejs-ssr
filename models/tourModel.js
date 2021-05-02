@@ -41,10 +41,11 @@ const tourSchema = new mongoose.Schema(
     },
     ratingsAverage: {
       type: Number,
-      default: 4.5,
+      default: 0,
       // min and max are applicable for numbers as well as dates
       min: [1, 'A minimum rating of 1 is required'],
-      max: [5, 'A maximum rating of 5 is only possible']
+      max: [5, 'A maximum rating of 5 is only possible'],
+      set: ratingVal => Math.round(ratingVal * 10) / 10 // 4.677777 * 10 = 46.777777 => Math.round(46.7777) = 47 => 47/10 = 4.7.
     },
     ratingsQuantity: {
       type: Number,
@@ -128,9 +129,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
-// creating indexes(unique and compound) for frequently queried fields-
+// creating indexes(unique and compound) for frequently queried fields. This helps in fast retrieval in subsequent queries on the same field.
 tourSchema.index({ price: -1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+
 // Creating a virtual property that we can get on query to db. The value of this virtual property is defined inside of function
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
