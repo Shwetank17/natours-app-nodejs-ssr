@@ -85,7 +85,10 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 // telling express to render the pug template named 'base' when '/' is invoked
 app.use('/', (req, res) => {
-  res.status(200).render('base');
+  res.status(200).render('base', {
+    tour: 'Park Camper',
+    user: 'Jonas'
+  });
 });
 
 app.all('*', (req, res, next) => {

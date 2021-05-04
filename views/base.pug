@@ -1,1 +1,61 @@
-h1 My First Pug template
+doctype html
+
+html
+    
+    head
+        
+        meta(charset="UTF-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1.0")
+        //- attributes are always enclosed in brackets 
+        //- express will look for these assets in /public directory as we have specified this directory to be used to serve static files.
+        link(rel="stylesheet" href="../css/style.css")
+        link(rel="shortcut icon" type="image/png" href="../img/favicon.png")
+        link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300i,700")
+        title Natours | Exciting tours for adventurous people
+        //- Like we use ${variableName} in template string in pug we use #{variableName}
+        //- title Natours | #{tour}
+        
+    body
+        //- Introductory notes
+        //- this 'tour' variable is sent inside an object sent from the route that is rendering this template 
+        //- h1= tour
+        //- we can run normal javascript on these variables
+        //- h2= user.toUpperCase()
+        //- Buffered code is actually sent to the client with the template. Unbuffered code is not sent to client instead it is used for logical processing in the template. An unfbuffered code start with '-' without code as below
+        //- - const x = 9; //- Unbuffered code
+        //- h2= 2 * x //- Buffered code
+        
+        // HEADER
+        header.header
+            nav.nav.nav--tours 
+                a.nav__el(href="#") All tours
+            .header__logo
+                img(src="img/logo-white.png" alt="Natours logo")
+            nav.nav.nav--user 
+                //- a.nav--el(href="#") My bookings
+                //- a.nav__el(href='#')
+                //-     img.nav__user-img(src="img/user.png" alt="User photo")
+                //-     span Jonas 
+                button.nav__el Log in 
+                button.nav__el.nav__el--cta Sign up
+        
+        // CONTENT
+        section.overview 
+        h1= tour
+        
+        // FOOTER
+        .footer 
+            .footer__logo
+                img(src="img/logo-green.png" alt="Natours logo")
+            ul.footer__nav
+                li 
+                    a(href='#') About us
+                li 
+                    a(href='#') Download apps
+                li 
+                    a(href='#') Become a guide
+                li 
+                    a(href='#') Careers
+                li 
+                      a(href='#') Contacts
+            p.footer__copyright &copy; by Jonas Schmedtmann. All rights reserved.
