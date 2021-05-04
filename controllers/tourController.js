@@ -80,8 +80,7 @@ exports.getTourStat = catchAsync(async (req, res, next) => {
       }
     },
     // sort price in ascending order
-    { $sort: { avgPrice: 1 } },
-    { $match: { _id: { $ne: 'EASY' } } }
+    { $sort: { avgPrice: 1 } }
   ]);
 
   res.status(200).json({
