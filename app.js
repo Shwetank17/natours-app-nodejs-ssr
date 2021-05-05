@@ -83,11 +83,24 @@ app.use((req, res, next) => {
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+
 // telling express to render the pug template named 'base' when '/' is invoked
-app.use('/', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).render('base', {
     tour: 'Park Camper',
     user: 'Jonas'
+  });
+});
+
+app.get('/overview', (req, res) => {
+  res.status(200).render('overview', {
+    tour: 'Park Camper'
+  });
+});
+
+app.use('/tour', (req, res) => {
+  res.status(200).render('tour', {
+    tour: 'The Forest Hiker Tour'
   });
 });
 

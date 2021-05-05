@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start:withoutwatch": "node server.js",
-    "start:dev": "nodemon server.js",
+    "start:dev": "nodemon --ext pug server.js",
     "start:prod": "SET NODE_ENV=production&&nodemon server.js",
     "start:ndb": "nodemon ndb server.js",
     "start:ndb:withoutwatch": "ndb server.js"
