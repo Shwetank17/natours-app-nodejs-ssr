@@ -13,6 +13,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
@@ -80,29 +81,10 @@ app.use((req, res, next) => {
 
 // APPLICATION ROUTES -
 // Here we are mounting a router to a specific route, for example mounting 'tourRouter' on '/api/v1/tours' route. 'tourRouter' is itself a middleware that will get invoked when this route is detected by express. 'tourRouter' inturn has subroutes and these subroutes have their own middlewares to send the appropriate response back to client and finish the request-response cycle.
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
-
-// telling express to render the pug template named 'base' when '/' is invoked
-app.get('/', (req, res) => {
-  res.status(200).render('base', {
-    tour: 'Park Camper',
-    user: 'Jonas'
-  });
-});
-
-app.get('/overview', (req, res) => {
-  res.status(200).render('overview', {
-    tour: 'Park Camper'
-  });
-});
-
-app.use('/tour', (req, res) => {
-  res.status(200).render('tour', {
-    tour: 'The Forest Hiker Tour'
-  });
-});
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
