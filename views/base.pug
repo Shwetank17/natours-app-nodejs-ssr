@@ -7,9 +7,9 @@ html
         meta(charset="UTF-8")
         meta(name="viewport" content="width=device-width, initial-scale=1.0")
         //- attributes are always enclosed in brackets 
-        //- express will look for these assets in /public directory as we have specified this directory to be used to serve static files.
-        link(rel="stylesheet" href="../css/style.css")
-        link(rel="shortcut icon" type="image/png" href="../img/favicon.png")
+        //- express will look for these assets in /public directory as we have specified this directory to be used to serve static files.Notice that href path starts with '/' to ensure that these assests are looked by express starting from the root path of the domain name.
+        link(rel="stylesheet" href="/css/style.css")
+        link(rel="shortcut icon" type="/image/png" href="/img/favicon.png")
         link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300i,700")
         title Natours | #{title}
         //- Like we use ${variableName} in template string in pug we use #{variableName}

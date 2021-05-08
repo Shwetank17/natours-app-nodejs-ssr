@@ -201,7 +201,7 @@ tourSchema.post(/^find/, function(doc, next) {
 tourSchema.pre('aggregate', function(next) {
   // console.log(JSON.stringify(this.pipeline(), null, 2)); - pretty way to print nested objects in console
   const geoAggregate = this.pipeline().filter(
-    // finding if the pipeline stage name has any geo operator using the regex. 'search' method on a string returns -1 if the match is not found else non zero value
+    // finding if the pipeline stage name has any geo operator using the regex. 'search' method on a string returns -1 if the match is not found else non zero value. This all id done because during aggregate queries, if there is any geo operator then it should be in the first stage.
     stage => Object.keys(stage)[0].search(GEOSPATIAL_OPERATOR_TEST) !== -1
   );
 
