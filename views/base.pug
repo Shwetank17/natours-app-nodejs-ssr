@@ -4,9 +4,39 @@ html
     
     head
         
+        block head
+        //- attributes are always enclosed in brackets 
         meta(charset="UTF-8")
         meta(name="viewport" content="width=device-width, initial-scale=1.0")
-        //- attributes are always enclosed in brackets 
+        
+        //- meta(http-equiv="Content-Security-Policy" 
+        //- content="default-src 'self' data: gap: ws: ; 
+        //- style-src 'self' 'unsafe-inline'; 
+        //- script-src https: *.example.com ;
+        //- media-src 'none'; 
+        //- font-src *;
+        //- connect-src *;
+        //- img-src 'self' data: content:;")
+        
+        //-  base-uri /abc/; - limit to content in this folder  v2
+        //- form-action ; - limit where forms can be sent  v2
+        
+        //- 'self' - anything from the same origin
+        //- data: - data-uri (base64 images)
+        //- gap: - phonegap and cordova used by plugins on iOS
+        //- ws: - web sockets
+        //- * - anything except data: and blobs
+        //- filesystem: - access things on the local filesystem
+        //- blob: - allow Binary Large OBjects
+        //- mediastream: - allow streamed media
+        //- content: - used by Cordova
+        //- 'none' - prevent anything in the category
+        //- https: - anything over https://
+        //- *.example.com - anything from any subdomain of example.com
+        //- 'unsafe-inline' - inline source elements like style attribute, onclick, or script tags 
+        //- 'unsafe-eval' - allow javascript eval( ). 
+        
+        
         //- express will look for these assets in /public directory as we have specified this directory to be used to serve static files.Notice that href path starts with '/' to ensure that these assests are looked by express starting from the root path of the domain name.
         link(rel="stylesheet" href="/css/style.css")
         link(rel="shortcut icon" type="/image/png" href="/img/favicon.png")
@@ -36,3 +66,5 @@ html
         // FOOTER
         //- ('_footer' is the child template of 'base' template)
         include _footer
+        
+        script(src="/js/mapBox.js")

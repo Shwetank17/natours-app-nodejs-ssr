@@ -1,4 +1,7 @@
 extends base
+block append head
+    script(src='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js')
+    link(href='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css' rel='stylesheet')
 
 include _reviewCard
 
@@ -65,7 +68,8 @@ block content
                 img.picture-box__img(src=`/img/tours/${image}`, alt=`${tour.name} ${index + 1}`, class=`picture-box__img--${index + 1}`)
 
     section.section-map
-    #map
+        //- Sending 'locations' attribute in 'data-locations' form so that 'data-locations' value can be accessed in mapBox.js file(see there to check the access pattern). tour.pug will load in client side and will contain the tour locations in string form. Our mapBox.js file will also run in client side as we have included it in our base.pug. When mapBox.js is executed in client side then it can access this data as we have already sent in this tour.pug template. 
+        #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
     section.section-reviews
         .reviews
