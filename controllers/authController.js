@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
-const Token = require('../utils/authUtils');
+const authFactory = require('../utils/authUtils');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
 
@@ -18,7 +18,8 @@ exports.createUser = catchAsync(async (req, res, next) => {
     role: req.body.role
   });
   if (newUser && newUser._id) {
-    token = await Token(newUser._id);
+    token = await authFactory.generateToken(newUser._id);
+    authFactory.sendResponseCookie(token, res, next);
     delete newUser.password;
   } else {
     next(new AppError(`Error creating account!`, 404));
@@ -47,7 +48,8 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('EmailId or Password is incorrect!', 401));
   }
   // return a new jwt back to client
-  const token = await Token(user._id);
+  const token = await authFactory.generateToken(user._id);
+  authFactory.sendResponseCookie(token, res, next);
   res.status(200).json({ status: 'success', token: token });
 });
 
@@ -61,14 +63,19 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers && req.headers.authorization ? req.headers.authorization : null;
   if (authHeaderVal && authHeaderVal.startsWith('Bearer')) {
     token = authHeaderVal.split(' ')[1];
-    if (!token) {
-      return next(new AppError('You are not logged in! Login to continue.'));
-    }
-    decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET_KEY);
+  }
+  // cookie can be sent from the browser in each request automatically. Our cookie-parser will parse that and attach to request object.
+  else if (req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
-  // Check if the _id in the token's payload has any user associated with it. This is done for the case, say user is not present in database but JWT is still valid as it was issued recently and by the time user has deleted his account.
+  if (!token) {
+    return next(new AppError('You are not logged in! Login to continue.'));
+  }
+
+  decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET_KEY);
   if (decode && decode.id) {
+    // Check if the _id in the token's payload has any user associated with it. This is done for the case, say user is not present in database but JWT is still valid as it was issued recently and by the time user has deleted his account.
     currentUser = await User.findById({ _id: decode.id });
     if (!currentUser) {
       return next(
@@ -91,6 +98,39 @@ exports.protect = catchAsync(async (req, res, next) => {
   // if all conditions above are passed we allow the user to access to the route
   req.user = currentUser;
   next();
+});
+
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  let token = null;
+  let decode = null;
+  let currentUser = null;
+  // cookie can be sent from the browser in each request automatically. Our cookie-parser will parse that and attach to request object.
+  if (req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
+    // NOTICE THAT WE ARE NOT GENERATING OUR new AppError object in case of errors in any of the steps below in this function. It is because 'isLoggedIn' middleware will be called when we are rendering our pug templates say for example /tour/:slug route in viewsRoutes.js. If we create new AppError (say if 'currentUser' is not found below) here then our error will cause the req-resp cycle to complete and further next() middleware won't be called and hence the template to be rendered at /tour/:slug won't render.
+    if (!token) {
+      return next();
+    }
+
+    decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET_KEY);
+    if (decode && decode.id) {
+      // Check if the _id in the token's payload has any user associated with it. This is done for the case, say user is not present in database but JWT is still valid as it was issued recently and by the time user has deleted his account.
+      currentUser = await User.findById({ _id: decode.id });
+      if (!currentUser) {
+        return next();
+      }
+    }
+
+    // Check if the token sent is not old i.e the case where token was sent earlier but after sometime user has changed his password and now user is not sending the new token that was issued to him at the time of password change instead sending the old token(although the old token's integrity is intact and has not yet expired but still the token will be considered as old and invalid)
+    if (currentUser && currentUser.changedPasswordAfter(decode.iat)) {
+      return next();
+    }
+
+    // if all conditions above are passed we allow the user to access to the route
+    res.locals.user = currentUser;
+    return next();
+  }
+  return next();
 });
 
 exports.restrictTo = (...roles) => {
@@ -181,7 +221,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // here we haven't passed { validator : false } because we want our schema validators to run before saving this data
   await user.save();
   // return a new jwt back to client
-  const token = await Token(user._id);
+  const token = await authFactory.generateToken(user._id);
+  authFactory.sendResponseCookie(token, res, next);
   res.status(200).json({ status: 'success', token: token });
 });
 
@@ -201,19 +242,9 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // Log the user in and send a fresh JWT back
-  const token = await Token(user._id);
+  const token = await authFactory.generateToken(user._id);
+  authFactory.sendResponseCookie(token, res, next);
 
-  // Send jwt as cookie back to the user so that it can be automatically saved in browser
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    // this option ensures that the cookie cannot be modified by browser by an XSS attack on the browser
-    httpOnly: true
-  };
-  // secure true will ensure that the cookie will be sent/recieve on only in https secure channel
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-  res.cookie('jwt', token, cookieOptions);
   res.status(200).json({
     status: 'success',
     token: token

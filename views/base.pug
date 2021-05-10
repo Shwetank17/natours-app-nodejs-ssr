@@ -9,6 +9,7 @@ html
         meta(charset="UTF-8")
         meta(name="viewport" content="width=device-width, initial-scale=1.0")
         
+        //- Content Security Policy headers are used to specify what type of scripts, data, media etc we allow in our website. This prevents our website from malicious activites like XSS. There are different attributes of CSP like 'default-src', 'style-src', 'script-src' etc. Each attribute has space separated values and attribute ends with a semicolon.
         //- meta(http-equiv="Content-Security-Policy" 
         //- content="default-src 'self' data: gap: ws: ; 
         //- style-src 'self' 'unsafe-inline'; 
@@ -67,4 +68,6 @@ html
         //- ('_footer' is the child template of 'base' template)
         include _footer
         
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js")
         script(src="/js/mapBox.js")
+        script(src="/js/login.js")

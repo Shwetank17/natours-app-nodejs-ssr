@@ -6,6 +6,7 @@ const sanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -46,6 +47,9 @@ app.use('/api', limiter);
 // Middleware that ensure the body is parsed and attached to the incoming request so that it can be used later as req.body. Limit has been set to 10kb so that an attacker cannot overload the server with heavy payloads
 app.use(express.json({ limit: '10kb' }));
 
+// Middleware to parse the cookie (and add it to 'cookies' object in request object) sent from any incoming request from any origin like browser ajax request, postman request etc.
+app.use(cookieParser());
+
 // Middleware to do data sanitization and prevent against NoSql injection like doing a login as :
 // {"email": {"$gt": ""}, "password": password12345 } - this will return all the users and whatever password is sent in the body will be matched with the first one, if it matches login will happen, which is bad! Notice that we have used this middleware after the above middleware because after the above middleware executes it's work then we have req.body ready to be sanitized
 app.use(sanitize());
@@ -76,6 +80,7 @@ app.use((req, res, next) => {
 // Middleware to attach the requestTime custom key in the incoming request
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log('INCOMING COOKIE(S)', req.cookies);
   next();
 });
 

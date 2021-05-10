@@ -17,6 +17,7 @@ exports.getTour = catchAsync(async (req, res, next) => {
   });
   res
     .status(200)
+    // mapbox js was rejected by our response headers(don't know why) so have to override the response headers with below headers
     .set(
       'Content-Security-Policy',
       "default-src 'self' https://*.mapbox.com ;base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src https://cdnjs.cloudflare.com https://api.mapbox.com 'self' blob: ;script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;"
@@ -24,5 +25,17 @@ exports.getTour = catchAsync(async (req, res, next) => {
     .render('tour', {
       title: `${tour.title} Tour`,
       tour
+    });
+});
+
+exports.getLoginForm = catchAsync(async (req, res, next) => {
+  res
+    .status(200)
+    .set(
+      'Content-Security-Policy',
+      "connect-src 'self' https://cdnjs.cloudflare.com"
+    )
+    .render('login', {
+      title: 'Natours Log In'
     });
 });
