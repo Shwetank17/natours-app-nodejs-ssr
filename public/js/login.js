@@ -1,11 +1,11 @@
 /* eslint-disable */
 
-const loginHandler = async event => {
-  // prevent default behaviour of form to reload the page
-  event.preventDefault();
+import axios from 'axios';
+
+import { showAlert } from './alert';
+
+export const loginHandler = async (email, password) => {
   try {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
     const response = await axios({
       method: 'POST',
       url: 'http://127.0.0.1:3000/api/v1/users/login',
@@ -15,13 +15,28 @@ const loginHandler = async event => {
       }
     });
     if (response.data.status === 'success') {
+      showAlert('success', 'Logged in successfully');
       window.setTimeout(() => {
         location.assign('/');
       }, 1500);
     }
   } catch (error) {
+    showAlert('error', error.response.data.message);
     console.log(error.response.data);
   }
 };
 
-document.querySelector('.form').addEventListener('submit', loginHandler);
+export const logoutHandler = async () => {
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: 'http://127.0.0.1:3000/api/v1/users/logout'
+    });
+    if (response && response.data.status === 'success') {
+      showAlert('success', 'Logged out successfully!');
+      location.reload(true); // browser will skip the cache and reload the page from the server.
+    }
+  } catch (error) {
+    showAlert('error', error.response.data.message);
+  }
+};

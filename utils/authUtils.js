@@ -20,12 +20,17 @@ exports.generateToken = payload => {
   });
 };
 
-exports.sendResponseCookie = (token, res, next) => {
+exports.sendResponseCookie = (token, expiresInDay, res, next) => {
   // Send jwt as cookie back to the user so that it can be automatically saved in browser. This token generation works for create new user, login in an existing user, update password of existing user and reset password of existing user. All these operations can be done by browser application so we send the cookie with jwt value back in response to be stored in client's browser or whatever the calling application is doing these operation
+  const convertDaysToMillseconds = 24 * 60 * 60 * 1000;
+  let expiresIn = '';
+  if (!expiresInDay) {
+    expiresIn = process.env.JWT_COOKIE_EXPIRES_IN * convertDaysToMillseconds;
+  } else {
+    expiresIn = expiresInDay * convertDaysToMillseconds;
+  }
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
+    expires: new Date(Date.now() + expiresIn),
     // this option ensures that the cookie cannot be modified by browser by an XSS attack on the browser
     httpOnly: true
   };

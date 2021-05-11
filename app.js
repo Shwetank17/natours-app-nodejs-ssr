@@ -21,7 +21,18 @@ const app = express();
 // APPLICATION MIDDLEARES -
 
 // Middleware to set security headers when sending response back. Example of these headers that can be checked in response are 'X-DNS-prefetch-Control', 'Strict-Transport-Security', 'X-Download-Options', 'X-XSS-Protection'. Browser understand these headers and act accordingly. Helmet is a collection of 14 small middlewares out of which only some are enabled by default. Check documentation to enable/disable as per your needs.
-app.use(helmet());
+app.use(
+  helmet()
+  // helmet.contentSecurityPolicy({
+  //   directives: {
+  //     defaultSrc: ["'self'", 'https:', 'http:', 'data:', 'ws:'],
+  //     baseUri: ["'self'"],
+  //     fontSrc: ["'self'", 'https:', 'http:', 'data:'],
+  //     scriptSrc: ["'self'", 'https:', 'http:', 'blob:'],
+  //     styleSrc: ["'self'", "'unsafe-inline'", 'https:', 'http:']
+  //   }
+  // })
+);
 
 // Middleware to set pug as our template engine
 app.set('view engine', 'pug');
@@ -46,6 +57,9 @@ app.use('/api', limiter);
 
 // Middleware that ensure the body is parsed and attached to the incoming request so that it can be used later as req.body. Limit has been set to 10kb so that an attacker cannot overload the server with heavy payloads
 app.use(express.json({ limit: '10kb' }));
+
+// Middleware to parse the urlencoded payload that comes when a form is submitted in front end like account update form
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Middleware to parse the cookie (and add it to 'cookies' object in request object) sent from any incoming request from any origin like browser ajax request, postman request etc.
 app.use(cookieParser());
@@ -95,6 +109,7 @@ app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
 });
 
+// Middleware custom Global Error Handler. All error handlers should always be in last. This middleware will be called in all cases where we pass next function with error.
 app.use(globalErrorHandler);
 
 module.exports = app;

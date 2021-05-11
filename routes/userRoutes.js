@@ -9,6 +9,7 @@ router.post('/signup', authController.createUser);
 router.post('/login', authController.login);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:resetToken', authController.resetPassword);
+router.get('/logout', authController.logout);
 
 // This router is like a mini application and just like the regular 'app' we can use a middleware with it. So we are running the 'protect' middleware at this point to make sure that all other routes from here onwards are protected. This will save writing extra code to add 'authController.protect' to every route from here onwards.
 router.use(authController.protect);

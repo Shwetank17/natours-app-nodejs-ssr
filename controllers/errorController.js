@@ -30,38 +30,61 @@ const handleTokenExpiredError = () => {
 };
 
 // return all the information back in response in case of environment is dev so that it is helpful in debugging issues in future
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    stack: err.stack,
+const sendErrorDev = (err, req, res) => {
+  // CASE WHEN REQUEST IS FOR API
+  if (req.originalUrl.startsWith('/api')) {
+    console.error(err);
+    return res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      stack: err.stack,
+      message: err.message
+    });
+  }
+  console.error(err);
+  // CASE WHEN REQUEST CAME FROM BROWSER
+  return res.status(err.statusCode).render('error', {
+    title: 'Error Page',
     message: err.message
   });
 };
-const sendErrorProd = (err, res) => {
+
+const sendErrorProd = (err, req, res) => {
   // We know about the error so we trust it and send it to client
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message
-    });
-  } else {
-    // We don't know about the error so we don't send it to client instead log it for our own debugging
+  // CASE WHEN REQUEST IS FOR API
+  if (req.originalUrl.startsWith('/api')) {
     console.error(err);
-    res.status(500).json({
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message
+      });
+    }
+    // We don't know about the error so we don't send it to client instead log it for our own debugging. Since this block will execute if the error is NOT operational which means that we haven't captured this error explicitly but somewhere catchAsync has caught it.
+    console.error(err);
+    return res.status(500).json({
       status: 'error',
       message: 'Something went wrong...'
     });
   }
+  console.error(err);
+  // CASE WHEN REQUEST CAME FROM BROWSER
+  return res.status(err.statusCode).render('error', {
+    title: 'Error Page',
+    message: err.message
+  });
 };
+
+// Error-handling middleware always takes four arguments. You must provide four arguments to identify it as an error-handling middleware function. Even if you don’t need to use the next object, you must specify it to maintain the signature. Otherwise, the next object will be interpreted as regular middleware and will fail to handle errors.
 module.exports = (err, req, res, next) => {
   // console.log('stack trace is', err.stack);
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
+    error.message = err.message;
     // All the errors below are handled to make them operational errors so that we send meaningful messages to client instead of sending 'something went wrong...'
     // error from mongoose
     if (err.name === 'CastError') {
@@ -83,6 +106,6 @@ module.exports = (err, req, res, next) => {
     if (err.name === 'TokenExpiredError') {
       error = handleTokenExpiredError();
     }
-    sendErrorProd(error, res);
+    sendErrorProd(error, req, res);
   }
 };

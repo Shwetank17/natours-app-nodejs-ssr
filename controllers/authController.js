@@ -19,7 +19,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
   });
   if (newUser && newUser._id) {
     token = await authFactory.generateToken(newUser._id);
-    authFactory.sendResponseCookie(token, res, next);
+    authFactory.sendResponseCookie(token, null, res, next);
     delete newUser.password;
   } else {
     next(new AppError(`Error creating account!`, 404));
@@ -49,9 +49,20 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   // return a new jwt back to client
   const token = await authFactory.generateToken(user._id);
-  authFactory.sendResponseCookie(token, res, next);
+  authFactory.sendResponseCookie(token, null, res, next);
   res.status(200).json({ status: 'success', token: token });
 });
+
+exports.logout = (req, res, next) => {
+  // send loggedout cookie to user which expires in 10 seconds so subsequent requests from the browser will after 10 seconds will have no cookie sent so we will treat those subsequent request as not logged in!
+  authFactory.sendResponseCookie(
+    'loggedout',
+    process.env.JWT_LOGOUT_COOKIE_EXPIRES_IN,
+    res,
+    next
+  );
+  res.status(200).json({ status: 'success' });
+};
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token = null;
@@ -95,8 +106,10 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // if all conditions above are passed we allow the user to access to the route
+  // if all conditions above are passed we allow the user to access to the route and the route handler will then have access to user object
   req.user = currentUser;
+  // locals is set so that any our template can access this user object
+  res.locals.user = currentUser;
   next();
 });
 
@@ -112,6 +125,8 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
       return next();
     }
 
+    if (token === 'loggedout') return next();
+
     decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET_KEY);
     if (decode && decode.id) {
       // Check if the _id in the token's payload has any user associated with it. This is done for the case, say user is not present in database but JWT is still valid as it was issued recently and by the time user has deleted his account.
@@ -126,10 +141,11 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
       return next();
     }
 
-    // if all conditions above are passed we allow the user to access to the route
+    // if all conditions above are passed we allow the user to access to the route and we set 'locals' variable so that it can be used in any of the pug template if required. For example 'locals.user' is used in header template to determine and display the UI as per the user is logged in or not.
     res.locals.user = currentUser;
     return next();
   }
+
   return next();
 });
 
@@ -222,7 +238,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
   // return a new jwt back to client
   const token = await authFactory.generateToken(user._id);
-  authFactory.sendResponseCookie(token, res, next);
+  authFactory.sendResponseCookie(token, null, res, next);
   res.status(200).json({ status: 'success', token: token });
 });
 
@@ -243,7 +259,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // Log the user in and send a fresh JWT back
   const token = await authFactory.generateToken(user._id);
-  authFactory.sendResponseCookie(token, res, next);
+  authFactory.sendResponseCookie(token, null, res, next);
 
   res.status(200).json({
     status: 'success',
