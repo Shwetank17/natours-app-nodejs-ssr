@@ -22,7 +22,7 @@ export const loginHandler = async (email, password) => {
     }
   } catch (error) {
     showAlert('error', error.response.data.message);
-    console.log(error.response.data);
+    console.log('Error calling login', error.response.data);
   }
 };
 
@@ -34,7 +34,7 @@ export const logoutHandler = async () => {
     });
     if (response && response.data.status === 'success') {
       showAlert('success', 'Logged out successfully!');
-      location.reload(true); // browser will skip the cache and reload the page from the server.
+      location.reload(true); // browser will skip the cache and reload the page from the server. This is necessary in order for browser to send the latest cookied with value 'loggedout' to our express which in turn will treat the request as non-authenticated request
     }
   } catch (error) {
     showAlert('error', error.response.data.message);
