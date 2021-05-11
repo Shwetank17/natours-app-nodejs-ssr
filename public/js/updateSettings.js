@@ -3,25 +3,26 @@
 import axios from 'axios';
 import { showAlert } from './alert';
 
-export const updateData = async (name, email) => {
-  console.log('FEE', name, email);
+export const updateSettings = async (data, type) => {
+  const url =
+    type === 'password'
+      ? 'http://127.0.0.1:3000/api/v1/users/updatePassword'
+      : 'http://127.0.0.1:3000/api/v1/users/updateMe';
+  console.log('11111', data, url);
   try {
     const response = await axios({
       method: 'PATCH',
-      url: 'http://127.0.0.1:3000/api/v1/users/updateMe',
-      data: {
-        name,
-        email
-      }
+      url,
+      data
     });
     if (response.data.status === 'success') {
-      showAlert('success', 'Profile updated successfully!');
+      showAlert('success', `${type.toUpperCase()} updated successfully!`);
       setTimeout(() => {
         location.reload(true);
       }, 2000);
     }
   } catch (error) {
-    console.log('ERROR calling updateMe', error.response.data);
+    console.log('ERROR', error.response.data);
     showAlert(error.response.data);
   }
 };
