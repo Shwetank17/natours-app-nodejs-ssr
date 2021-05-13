@@ -1,3 +1,6 @@
+const multer = require('multer');
+const sharp = require('sharp');
+
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
@@ -28,6 +31,66 @@ const AppError = require('../utils/appError');
 //   }
 //   next();
 // };
+
+// multerFilter is defined to specify the filter i.e the type of files multer should accept from user. In our case it is only images so we added a condition for the same. If the file uploaded is not image then we create a new error and pass as the first argument to 'cb'. The second argument to 'cb' will be 'true' if our filter matches else it will be 'false'
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(
+      new AppError('Only images are allowed to be uploaded! Try again', 401),
+      false
+    );
+  }
+};
+
+// when the storage for multer is specified as memory then nothing get saved in disk. All the resizing takes place in memory and then finally the images are saved to disk in the resizing phase when sharp comes into picture.
+const multerStorage = multer.memoryStorage();
+
+// destination used by multer to save image. Multer has many different ways to specify the location of upload images and other stuff. Check out documenation for more.
+// const upload = multer({ dest: './public/img/users/' });
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+// upload configuration with different fields and each having different number of counts of upload
+exports.uploadTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 }
+]);
+
+// upload configuration for other cases - Just for reference
+// to upload single file with field name 'photo'
+// upload.single('photo'); - "req.file" will be object that will contain the uploaded data information
+// to upload multiple files (5 max) in single field name 'images' - "req.files" will be object that will contain the uploaded data information
+// upload.array('images', 5)
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  // adding 'file.filename' to request object so that our 'updateMe' handler below can access it and our filename(name of the photo) is allowed to be updated.
+  req.body.imageCover = `tour-${req.params.id}${Date.now()}.jpeg`;
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333) // 2:3 ratio is a good choice for large images
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`./public/img/tours/${req.body.imageCover}`);
+
+  req.body.images = [];
+
+  // Note here that we want to call the next() iff all the images are stored and req.body.images array is populated. This is the reason await Promise.all() has been used
+  await Promise.all(
+    req.files.images.map(async (image, i) => {
+      const imageName = `tour-${req.params.id}${Date.now()}${i + 1}.jpeg`;
+      await sharp(image.buffer)
+        .resize(2000, 1333) // 2:3 ratio is a good choice to show large images in desktop mode
+        .toFormat('jpeg')
+        .jpeg({ quality: 80 })
+        .toFile(`./public/img/tours/${imageName}`);
+      req.body.images.push(imageName);
+    })
+  );
+
+  next();
+});
 
 exports.aliasTopTour = (req, resp, next) => {
   req.query.limit = 5;

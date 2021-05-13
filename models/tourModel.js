@@ -161,9 +161,9 @@ tourSchema.pre('save', function(next) {
   next();
 });
 
-// Commented below hook as referencing of users in guides array better that embedding of users in guides array
+// Commented below hook as referencing of users in guides array is better that embedding of users in guides array
 // tourSchema.pre('save', async function(next) {
-//   // This pre save hook is an example of embedding a document inside other document i.e user document inside the tour document. Since this hook only works in case of 'create' or 'save' so remember it won't work in case of updates. Remember that embedding has a drawback here for example if the user changes emailid or any of it's user specific data like 'role' then we would have to find out all the tours that has the given user as it's guide and update the embedded user document there also. This can become quite frustrating in large data set.s
+//   // This pre save hook is an example of embedding a document inside other document i.e user document inside the tour document. Since this hook only works in case of 'create' or 'save' so remember it won't work in case of updates. Remember that embedding has a drawback here for example if the user changes emailid or any of it's user specific data like 'role' then we would have to find out all the tours that has the given user as it's guide and update the embedded user document there also. This can become quite frustrating in large data sets
 //   const guidesPromises = this.guides.map(idOfUser => User.findById(idOfUser));
 //   // overwriting the guides values with the user documents obtained from resolved promises.
 //   this.guides = await Promise.all(guidesPromises);

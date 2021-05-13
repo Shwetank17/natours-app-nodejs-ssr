@@ -20,7 +20,6 @@ const User = require('../models/userModel');
 
 // multerFilter is defined to specify the filter i.e the type of files multer should accept from user. In our case it is only images so we added a condition for the same. If the file uploaded is not image then we create a new error and pass as the first argument to 'cb'. The second argument to 'cb' will be 'true' if our filter matches else it will be 'false'
 const multerFilter = (req, file, cb) => {
-  console.log('1111', file);
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
@@ -31,27 +30,28 @@ const multerFilter = (req, file, cb) => {
   }
 };
 
+// when the storage for multer is specified as memory then nothing get saved in disk. All the resizing takes place in memory and then finally the images are saved to disk in the resizing phase when sharp comes into picture.
 const multerStorage = multer.memoryStorage();
-
-exports.resizeUploadedPhoto = (req, res, next) => {
-  if (!req.file) return next();
-
-  // adding 'file.filename' to request object so that our 'updateMe' handler below can access it and our filename(name of the photo) is allowed to be updated.
-  req.file.filename = `user-${req.user._id}${Date.now()}.jpeg`;
-  sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat('jpeg')
-    .jpeg({ quality: 70 })
-    .toFile(`./public/img/users/${req.file.filename}`);
-  next();
-};
 
 //destination used by multer to save image. Multer has many different ways to specify the location of upload images and other stuff. Check out documenation for more.
 // const upload = multer({ dest: './public/img/users/' });
 const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
-// 'photo' is the name of the field that will sent in the form data that would then hold the image uploaded by user
+// This enables only single photo to be uploaded. 'photo' is the name of the field that will sent in the form data that would then hold the image uploaded by user
 exports.uploadUserImage = upload.single('photo');
+
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  // adding 'file.filename' to request object so that our 'updateMe' handler below can access it and our filename(name of the photo) is allowed to be updated.
+  req.file.filename = `user-${req.user._id}${Date.now()}.jpeg`;
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 70 })
+    .toFile(`./public/img/users/${req.file.filename}`);
+  next();
+});
 
 const filterObj = (incomingBody, ...validFieldsUpdatable) => {
   const validUpdatableObj = {};
@@ -64,7 +64,6 @@ const filterObj = (incomingBody, ...validFieldsUpdatable) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log('2222', req.body, req.file);
   // Create an error if user tries to send password or confirmPassword fields as we have different route to handle the same
   if (
     req.body.password ||
