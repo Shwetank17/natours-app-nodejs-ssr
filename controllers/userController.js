@@ -1,4 +1,5 @@
 const multer = require('multer');
+const sharp = require('sharp');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -6,19 +7,20 @@ const factory = require('./handlerFactory');
 const User = require('../models/userModel');
 
 // multerStorage is defined to specify the path that will be used to store the images and the name of the file before saving. 'cb' stands for callback that accepts error as it's first argument if any else null.
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './public/img/users');
-  },
-  filename: (req, file, cb) => {
-    const ext = file.mimetype.split('/')[1];
-    cb(null, `user-${req.user._id}${Date.now()}.${ext}`);
-  }
-});
+// Comment below block as we are using memoryStorage to compress and resize images and in there only we are setting the path and name of the file but below is one of the way also to keep in mind.
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, './public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user._id}${Date.now()}.${ext}`);
+//   }
+// });
 
 // multerFilter is defined to specify the filter i.e the type of files multer should accept from user. In our case it is only images so we added a condition for the same. If the file uploaded is not image then we create a new error and pass as the first argument to 'cb'. The second argument to 'cb' will be 'true' if our filter matches else it will be 'false'
 const multerFilter = (req, file, cb) => {
-  console.log('13451', file);
+  console.log('1111', file);
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
@@ -27,6 +29,21 @@ const multerFilter = (req, file, cb) => {
       false
     );
   }
+};
+
+const multerStorage = multer.memoryStorage();
+
+exports.resizeUploadedPhoto = (req, res, next) => {
+  if (!req.file) return next();
+
+  // adding 'file.filename' to request object so that our 'updateMe' handler below can access it and our filename(name of the photo) is allowed to be updated.
+  req.file.filename = `user-${req.user._id}${Date.now()}.jpeg`;
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 70 })
+    .toFile(`./public/img/users/${req.file.filename}`);
+  next();
 };
 
 //destination used by multer to save image. Multer has many different ways to specify the location of upload images and other stuff. Check out documenation for more.
@@ -47,7 +64,7 @@ const filterObj = (incomingBody, ...validFieldsUpdatable) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log('1111', req.body, req.file);
+  console.log('2222', req.body, req.file);
   // Create an error if user tries to send password or confirmPassword fields as we have different route to handle the same
   if (
     req.body.password ||
@@ -64,7 +81,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // Find the user, using filterObj method, extract only the valid data that can be updated and update it. A user can send for example 'role' field also in the request. If we don't ignore it then we will save it in the database which is wrong.
   const filteredBody = filterObj(req.body, 'name', 'email');
-  // since uploaded file(images) comes in req.file after parsing from multer so had to add 'photo' field before updating the document
+  // since uploaded file(images) comes in req.file(if we are using diskStorage or we manually set req.file in resizeUploadedPhoto method above in case of memoryStorage. This object will enable us to extract filename that we can assign to 'photo' field before firing the query to update the document
   if (req.file) filteredBody.photo = req.file.filename;
   // new: true means that a new document will be returned. runValidators: true is sent to make sure that validators on the field that are being updated are run.
   const user = await User.findByIdAndUpdate(req.user._id, filteredBody, {

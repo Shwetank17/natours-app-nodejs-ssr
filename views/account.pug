@@ -26,8 +26,8 @@ block content
             .user-view__content
                 .user-view__form-container
                     h2.heading-secondary.ma-bt-md Your account settings
-                    //- Submitting form data via post call to express without calling any API from browser
-                    //- form.form.form-user-data(action="/submit-user-data" method="POST")
+                    //- Submitting form data via form native post call without calling any API from browser. This call goes to express. Notice that in this case 'name' field with values 'name' & 'email' will be sent as key in the form data i.e {'name': 'value provided in name input', 'email:'value provided in email input' }. Also note that if we want to send the multi part form data like files to server then we need to add 'enctype=multipart/form-data'
+                    //- form.form.form-user-data(action="/submit-user-data" method="POST" enctype=multipart/form-data)
                     
                     //- Submitting form data via making an API call to express (preffered way)
                     form.form.form-user-data
@@ -39,7 +39,8 @@ block content
                             input#email.form__input(type='email', value=`${user.email}`, name="email", required)
                         .form__group.form__photo-upload
                             img.form__user-photo(src=`img/users/${user.photo}`, alt=`Photo of ${user.name}`)
-                            a.btn-text(href='') Choose new photo
+                            input.form__upload(type='file', accept="image/" id="photo", name="photo")
+                            label.form__label(for='photo') Choose new Photo
                         .form__group.right
                             button.btn.btn--small.btn--green Save settings
                 .line &nbsp;

@@ -37,15 +37,13 @@ if (logout) {
 if (updateData) {
   updateData.addEventListener('submit', event => {
     event.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    updateSettings(
-      {
-        name,
-        email
-      },
-      'profile'
-    );
+    // creating new FormData() object to accomodate file uploads
+    const form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    // files[0] denotes single file uploaded. If there are multiple uploads then this array will have multiple eleemnts in it.
+    form.append('photo', document.getElementById('photo').files[0]);
+    updateSettings(form, 'profile');
   });
 }
 

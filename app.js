@@ -87,14 +87,14 @@ app.use(
 
 // Test middleware for any future test purpose
 app.use((req, res, next) => {
-  console.log('Hello from the middleware 👋');
+  // console.log('Hello from the middleware 👋');
   next();
 });
 
 // Middleware to attach the requestTime custom key in the incoming request
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  console.log('INCOMING COOKIE(S)', req.cookies);
+  // console.log('INCOMING COOKIE(S)', req.cookies);
   next();
 });
 
