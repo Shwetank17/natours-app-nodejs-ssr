@@ -5,8 +5,7 @@
 	  }
 	],
 	"settings": {
-	  "workbench.colorTheme": "Darcula",
-	  "files.autoSave": "onFocusChange",
+	"workbench.colorTheme": "Darcula",
 	  "editor.formatOnSave": true,
 	  "editor.minimap.enabled": true,
 	  "workbench.statusBar.visible": true,
