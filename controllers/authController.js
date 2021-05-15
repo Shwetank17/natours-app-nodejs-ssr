@@ -5,7 +5,7 @@ const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 const authFactory = require('../utils/authUtils');
 const AppError = require('../utils/appError');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 exports.createUser = catchAsync(async (req, res, next) => {
   let token = null;
@@ -21,6 +21,8 @@ exports.createUser = catchAsync(async (req, res, next) => {
     token = await authFactory.generateToken(newUser._id);
     authFactory.sendResponseCookie(token, null, res, next);
     delete newUser.password;
+    const url = `${req.protocol}://${req.get('host')}/me`;
+    await new Email(newUser, url).sendWelcome();
   } else {
     next(new AppError(`Error creating account!`, 404));
   }
