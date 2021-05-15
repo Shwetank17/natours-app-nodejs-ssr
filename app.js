@@ -7,6 +7,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -20,6 +21,13 @@ const app = express();
 
 // APPLICATION MIDDLEARES -
 
+// Middleware to allows cross origin requests
+app.use(cors());
+// const corsOptions = {
+//   origin: 'http://localhost.com:3000 http://127.0.0.1:3000',
+//   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+// };
+
 // Middleware to set security headers when sending response back. Example of these headers that can be checked in response are 'X-DNS-prefetch-Control', 'Strict-Transport-Security', 'X-Download-Options', 'X-XSS-Protection'. Browser understand these headers and act accordingly. Helmet is a collection of 14 small middlewares out of which only some are enabled by default. Check documentation to enable/disable as per your needs.
 app.use(
   helmet()
@@ -29,7 +37,8 @@ app.use(
   //     baseUri: ["'self'"],
   //     fontSrc: ["'self'", 'https:', 'http:', 'data:'],
   //     scriptSrc: ["'self'", 'https:', 'http:', 'blob:'],
-  //     styleSrc: ["'self'", "'unsafe-inline'", 'https:', 'http:']
+  //     styleSrc: ["'self'", "'unsafe-inline'", 'https:', 'http:'],
+  //     connectSrc: ["'self'", "'https://cdnjs.cloudflare.com'"]
   //   }
   // })
 );

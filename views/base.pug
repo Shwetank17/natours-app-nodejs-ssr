@@ -8,6 +8,11 @@ html
         //- attributes are always enclosed in brackets 
         meta(charset="UTF-8")
         meta(name="viewport" content="width=device-width, initial-scale=1.0")
+        //- google's script to be loaded for google's OAuth
+        script(src="https://apis.google.com/js/platform.js?onload=init" async defer)
+        //- google's client id(sent during registration of application with google's OAuth flow) need to be specified below
+        meta(name="google-signin-client_id" content="1094136206034-ehjsuhtek45p6s99m1jm0lafso3e3ter.apps.googleusercontent.com")
+        script(src="js/oauthUser.js" async defer)
         
         //- Content Security Policy headers are used to specify what type of scripts, data, media etc we allow in our website. This prevents our website from malicious activites like XSS. There are different attributes of CSP like 'default-src', 'style-src', 'script-src' etc. Each attribute has space separated values and attribute ends with a semicolon.
         //- meta(http-equiv="Content-Security-Policy" 

@@ -34,6 +34,9 @@ exports.createUser = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
+  if (req.body.googleIdToken) {
+    return await authFactory.otherLogin(req, res, next, req.body.googleIdToken);
+  }
   // extract email and password from the incoming request
   const { email, password } = req.body;
   // check if email and password exists else return error

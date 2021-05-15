@@ -44,7 +44,7 @@ exports.getLoginForm = catchAsync(async (req, res, next) => {
     // axios js were rejected by chrome so need to set this headers in order for chrome to accepts axios js from cdn
     .set(
       'Content-Security-Policy',
-      "connect-src 'self' https://cdnjs.cloudflare.com"
+      "connect-src 'self' https://cdnjs.cloudflare.com http://127.0.0.1:3000/api/v1/users/login"
     )
     .render('login', {
       title: 'Natours Log In'
@@ -71,8 +71,6 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
       runValidators: true
     }
   );
-
-  console.log('1111', updatedUserData);
 
   res.status(200).render('account', {
     title: 'My Account',
