@@ -13,9 +13,16 @@ module.exports = class Email {
   // Create a transport for production and dev environment.
   createNewTransport() {
     if (process.env.NODE_ENV === 'production') {
-      // Sendgrid
-      return 1;
+      // Using gmail for production environment to send emails to clients
+      return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USERNAME,
+          pass: process.env.GMAIL_PASSWORD
+        }
+      });
     }
+    // in development mode we are using mailtrap to send and test emails
     return nodemailer.createTransport({
       host: process.env.MAILTRAP_HOST,
       port: process.env.MAILTRAP_PORT,
@@ -54,29 +61,11 @@ module.exports = class Email {
   async sendWelcome() {
     await this.send('welcome', 'Welcome to Natours Family!');
   }
+
+  async sendPasswordReset() {
+    await this.send(
+      'passwordReset',
+      'Your password reset request (Valid for 10 mins only!)'
+    );
+  }
 };
-
-// Earlier this function was called to send emails (in forgot password) to mailtrap later we created new class 'Email' above and using that for sending real emails
-// const sendEmail = async options => {
-//   // Create a transporter. We are using Mailtrap for our purpose. Nodemailer supports gmail, yahoo, outlook etc
-//   const transport = nodemailer.createTransport({
-//     host: process.env.MAILTRAP_HOST,
-//     port: process.env.MAILTRAP_PORT,
-//     auth: {
-//       user: process.env.MAILTRAP_USERNAME,
-//       pass: process.env.MAILTRAP_PASSWORD
-//     }
-//   });
-
-//   // Define the email options
-//   const mailOptions = {
-//     from: 'Utkarsh Kukreti <utkarshkukreti@io>',
-//     to: options.email,
-//     subject: options.subject,
-//     text: options.message
-//     // html : This can also be sent to display html content in the resetPassword email
-//   };
-
-//   // Actually send email. sendEmail returns a promise.
-//   await transport.sendMail(mailOptions);
-// };

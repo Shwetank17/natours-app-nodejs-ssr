@@ -180,20 +180,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // Deactivate all the validators specified in our schema. If we don't set this parameter to false the required validators during create(or save) will come up like 'emalid', 'password', 'confirmPassword' etc.
   await user.save({ validateBeforeSave: false });
 
-  // send resetToken to user's email using nodemailer
-  const resetUrl = `${req.protocol}://${
-    req.hostname
-  }/api/v1/users/resetToken/${resetToken}`;
-
-  const message = `You recently forgot your password. Click on the link ${resetUrl} to reset your password. Ignore if you haven't initiated this request.`;
-
   try {
-    await sendEmail({
-      email,
-      subject: 'Your password reset token! (Valid for 10 mins only)',
-      message
-    });
-
+    // send resetToken to user's email using nodemailer
+    const resetUrl = `${req.protocol}://${
+      req.hostname
+    }/api/v1/users/resetToken/${resetToken}`;
+    await new Email(user, resetUrl).sendPasswordReset();
     res.status(200).json({
       status: 'success',
       message: 'Reset token sent successfully to your email id!'
