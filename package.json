@@ -10,7 +10,7 @@
     "start:ndb": "nodemon ndb server.js",
     "start:ndb:withoutwatch": "ndb server.js",
     "watch:js": "parcel watch --no-hmr ./public/js/index.js --out-dir ./public/js --out-file ./public/js/bundle.js --public-url ./",
-    "build:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file ./public/js/bundle.js"
+    "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file ./public/js/bundle.js --public-url ./"
   },
   "author": "Utkarsh Kukreti",
   "license": "ISC",
@@ -18,6 +18,7 @@
     "@babel/polyfill": "^7.12.1",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "express": "^4.16.4",

@@ -3,6 +3,7 @@
 // @bable/polyfill is added to convert latest JS features, to es5 and less that compatiable for all the browsers
 import '@babel/polyfill';
 
+// When calling any of our natours api from front we used to call those api's like this '127.0.0.1:3000/api/....'. For production deployment removed the hostname and port number '127.0.0.1:3000' because our front end and backend will be deployed on the same heroku server so front end api calls will be prefixed with the correct hostname and portname
 import { displayMap } from './mapBox';
 import { loginHandler, logoutHandler } from './login';
 import { updateSettings } from './updateSettings';

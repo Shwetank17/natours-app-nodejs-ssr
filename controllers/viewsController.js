@@ -86,8 +86,6 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
     }
   );
 
-  console.log('1111', updatedUserData);
-
   res.status(200).render('account', {
     title: 'My Account',
     user: updatedUserData

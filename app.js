@@ -7,6 +7,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -20,6 +21,9 @@ const bookingRouter = require('./routes/bookingRoutes');
 const app = express();
 
 // APPLICATION MIDDLEARES -
+
+// Middleware to compression text data before sending to client. This doesn't work for images as images are supposed to be compressed already.
+app.use(compression());
 
 // Middleware to set security headers when sending response back. Example of these headers that can be checked in response are 'X-DNS-prefetch-Control', 'Strict-Transport-Security', 'X-Download-Options', 'X-XSS-Protection'. Browser understand these headers and act accordingly. Helmet is a collection of 14 small middlewares out of which only some are enabled by default. Check documentation to enable/disable as per your needs.
 app.use(

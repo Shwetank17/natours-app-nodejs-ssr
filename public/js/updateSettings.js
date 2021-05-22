@@ -6,9 +6,8 @@ import { showAlert } from './alert';
 export const updateSettings = async (data, type) => {
   const url =
     type === 'password'
-      ? 'http://127.0.0.1:3000/api/v1/users/updatePassword'
-      : 'http://127.0.0.1:3000/api/v1/users/updateMe';
-  console.log('11111', data, url);
+      ? '/api/v1/users/updatePassword'
+      : '/api/v1/users/updateMe';
   try {
     const response = await axios({
       method: 'PATCH',
@@ -22,7 +21,6 @@ export const updateSettings = async (data, type) => {
       }, 2000);
     }
   } catch (error) {
-    console.log('ERROR', error.response.data);
     showAlert(error.response.data);
   }
 };

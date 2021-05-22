@@ -41,7 +41,7 @@ const sendErrorDev = (err, req, res) => {
       message: err.message
     });
   }
-  console.error(err);
+  console.error('ERROR-DEV', err);
   // CASE WHEN REQUEST CAME FROM BROWSER
   return res.status(err.statusCode).render('error', {
     title: 'Error Page',
@@ -61,7 +61,7 @@ const sendErrorProd = (err, req, res) => {
       });
     }
     // We don't know about the error so we don't send it to client instead log it for our own debugging. Since this block will execute if the error is NOT operational which means that we haven't captured this error explicitly but somewhere catchAsync has caught it.
-    console.error(err);
+    console.error('ERROR-PROD', err);
     return res.status(500).json({
       status: 'error',
       message: 'Something went wrong...'

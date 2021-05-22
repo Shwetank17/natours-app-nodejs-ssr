@@ -156,7 +156,6 @@ tourSchema.virtual('reviews', {
 
 // Pre Hook
 tourSchema.pre('save', function(next) {
-  console.log('Document about to be saved is...', this);
   this.slug = slugify(this.name, { lower: true });
   next();
 });
@@ -172,7 +171,6 @@ tourSchema.pre('save', function(next) {
 
 // Post Hook
 tourSchema.post('save', function(doc, next) {
-  console.log('Document saved is...', doc);
   // Run your logic as in pre save above
   next();
 });
