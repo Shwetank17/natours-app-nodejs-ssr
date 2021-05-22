@@ -8,6 +8,7 @@ const hpp = require('hpp');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -21,6 +22,18 @@ const bookingRouter = require('./routes/bookingRoutes');
 const app = express();
 
 // APPLICATION MIDDLEARES -
+
+// Implement CORS
+app.use(cors());
+// Access-Control-Allow-Origin * : This is set and send in reponse headers when we use cors. It means allow all simple requests (GET and POST) from any domain to reach our domain
+// We can specify strict origin to only access our domain
+// app.use(cors({
+//   origin: 'https://www.natours.com'
+// }))
+
+// 'options' is like any other http verb like 'get', 'post'. For complex request like 'put', 'patch', 'delete' etc browser sends an 'option' pre flight request to validate if the remote domain is accepting these complex request. If remote domain is accepts it then the browser send the original request. So in order to accept the pre flight requests for all these complex request we are setting CORS for options pre flight requests.
+app.options('*', cors());
+// app.options('/api/v1/tours/:id', cors());
 
 // Middleware to compression text data before sending to client. This doesn't work for images as images are supposed to be compressed already.
 app.use(compression());
