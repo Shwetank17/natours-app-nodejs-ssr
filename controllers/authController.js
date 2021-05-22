@@ -19,7 +19,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
   });
   if (newUser && newUser._id) {
     token = await authFactory.generateToken(newUser._id);
-    authFactory.sendResponseCookie(token, null, res, next);
+    authFactory.sendResponseCookie(token, null, req, res, next);
     delete newUser.password;
     const url = `${req.protocol}://${req.get('host')}/me`;
     await new Email(newUser, url).sendWelcome();
@@ -51,7 +51,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   // return a new jwt back to client
   const token = await authFactory.generateToken(user._id);
-  authFactory.sendResponseCookie(token, null, res, next);
+  authFactory.sendResponseCookie(token, null, req, res, next);
   res.status(200).json({ status: 'success', token: token });
 });
 
@@ -60,6 +60,7 @@ exports.logout = (req, res, next) => {
   authFactory.sendResponseCookie(
     'loggedout',
     process.env.JWT_LOGOUT_COOKIE_EXPIRES_IN,
+    req,
     res,
     next
   );
@@ -232,7 +233,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
   // return a new jwt back to client
   const token = await authFactory.generateToken(user._id);
-  authFactory.sendResponseCookie(token, null, res, next);
+  authFactory.sendResponseCookie(token, null, req, res, next);
   res.status(200).json({ status: 'success', token: token });
 });
 
@@ -253,7 +254,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // Log the user in and send a fresh JWT back
   const token = await authFactory.generateToken(user._id);
-  authFactory.sendResponseCookie(token, null, res, next);
+  authFactory.sendResponseCookie(token, null, req, res, next);
 
   res.status(200).json({
     status: 'success',

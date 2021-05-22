@@ -22,7 +22,7 @@ const DB = process.env.DATABASE_REMOTE_VIA_APPLICATION_CONNECTION_STRING.replace
   process.env.DATABASE_REMOTE_PASSWORD
 );
 
-/*The second object passed to connect method should be memorised for now. 'connect method' returns a promise which on resolve returns a connection object*/
+// The second object passed to connect method should be memorised for now. 'connect method' returns a promise which on resolve returns a connection object
 mongoose
   .connect(DB, {
     useNewUrlParser: true,
@@ -63,3 +63,10 @@ process.on('unhandledRejection', err => {
 });
 
 // app.get('env') - will give the value of the environment variable set by express in app.js
+
+// We are listening to 'SIGTERM' especially because heroku sends a SIGTERM to shutdown it's dyanos every 24hour so we don't want any our transaction hanging due to this abrupt shutdown.
+process.on('SIGTERM', () => {
+  server.close(() => {
+    console.log('Gracefully shutting down the server due to SIGTERM.. ');
+  });
+});
