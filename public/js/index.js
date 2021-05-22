@@ -8,6 +8,7 @@ import { displayMap } from './mapBox';
 import { loginHandler, logoutHandler } from './login';
 import { updateSettings } from './updateSettings';
 import { bookTour } from './stripe';
+import { showAlert } from './alert';
 
 // DOM ELEMENTS
 const map = document.getElementById('map');

@@ -4,6 +4,7 @@ const Tour = require('../models/tourModel');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+const AppError = require('../utils/appError');
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   // Get the details of the tour being currently booked
@@ -25,7 +26,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
       {
         name: `${tour.name} Tour`,
         description: tour.summary,
-        images: [`${req.protocol}://${req.get('host')}/${tour.imageCover}`], // these images are to be live images i.e hosted in the internet because stripe will use those images and upload to their server to be shown in the checkout page on the left hand side
+        images: [
+          `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`
+        ], // these images are to be live images i.e hosted in the internet because stripe will use those images and upload to their server to be shown in the checkout page on the left hand side
         amount: tour.price,
         currency: 'inr',
         quantity: 1
@@ -55,11 +58,11 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 const createBookingCheckout = async session => {
   const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.display_items[0].amount;
-  await Booking.create({ tour, user, price });
+  const price = session.amount_total;
+  return await Booking.create({ tour, user, price });
 };
 
-exports.webhookCheckout = (req, res, next) => {
+exports.webhookCheckout = async (req, res, next) => {
   const signature = req.headers['stripe-signature'];
 
   let event;
@@ -73,10 +76,15 @@ exports.webhookCheckout = (req, res, next) => {
     return res.status(400).send(`Webhook error: ${err.message}`);
   }
 
-  if (event.type === 'checkout.session.completed')
-    createBookingCheckout(event.data.object);
-
-  res.status(200).json({ received: true });
+  if (event.type === 'checkout.session.completed') {
+    const booking = await createBookingCheckout(event.data.object);
+    if (!booking) {
+      return next(
+        new AppError('There was error creating booking in database', 500)
+      );
+    }
+    res.status(200).json({ received: true });
+  }
 };
 
 exports.createBooking = factory.createOne(Booking);
