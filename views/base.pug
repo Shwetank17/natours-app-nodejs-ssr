@@ -46,7 +46,7 @@ html
         //- Like we use ${variableName} in template string in pug we use #{variableName}
         //- title Natours | #{tour}
         
-    body
+    body(data-alert=`${alert ? alert : ''}`)
         //- Introductory notes
         //- this 'tour' variable is sent inside an object sent from the route that is rendering this template 
         //- h1= tour

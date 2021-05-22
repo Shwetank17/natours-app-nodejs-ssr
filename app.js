@@ -18,6 +18,7 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 
 const app = express();
 
@@ -72,6 +73,13 @@ const limiter = rateLimit({
   message: 'Too many request! Try again after an hour!'
 });
 app.use('/api', limiter);
+
+// has to be kept here because stripe will post data to this route when a checkout is success at front end. Stripe sends the data in raw format like stream and doesn't accept any modified json so this route has to be put before the next middleware which will convert the body of the request object to json. express.raw is used to convert the raw data in json and still keep the raw form of the data intact
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
 
 // Middleware that ensure the body is parsed and attached to the incoming request so that it can be used later as req.body. Limit has been set to 10kb so that an attacker cannot overload the server with heavy payloads
 app.use(express.json({ limit: '10kb' }));
